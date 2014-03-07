@@ -321,6 +321,8 @@ static unsigned char partPortamento = 0;
 static void analyseVolume( void )
 {
 	unsigned char vol = getVolume(adCh);
+	if ( vol > 100 ) vol = 100;
+	vol = (unsigned char)(((int)vol*127)/100);
 
 	switch ( adCh ){
 		default:
