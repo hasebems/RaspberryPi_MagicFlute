@@ -454,7 +454,7 @@ static int optionCommand(int morehelp, int argc, char *argv[])
 
 	while (1) {
 		int c;
-		if ((c = getopt_long(argc, argv, "hD:r:c:f:b:p:m:o:vne", long_option, NULL)) < 0)
+		if ((c = getopt_long(argc, argv, "hD:r:c:f:b:p:m:o:vnet:", long_option, NULL)) < 0)
 			break;
 		switch (c) {
 			case 'h':
