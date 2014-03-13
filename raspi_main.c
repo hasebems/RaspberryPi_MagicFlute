@@ -448,6 +448,7 @@ static int optionCommand(int morehelp, int argc, char *argv[])
 		{"verbose", 1, NULL, 'v'},
 		{"noresample", 1, NULL, 'n'},
 		{"pevent", 1, NULL, 'e'},
+		{"transpose", 1, NULL, 't'},
 		{NULL, 0, NULL, 0},
 	};
 
@@ -516,6 +517,7 @@ static int optionCommand(int morehelp, int argc, char *argv[])
 				break;
 			case 't':
 				transpose = atoi(optarg);
+				break;
 			default: break;
 		}
 	}
