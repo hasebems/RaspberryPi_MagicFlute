@@ -150,6 +150,7 @@ static unsigned char lastNote = 0;
 static unsigned short lastSwData = 0;
 //	Time Measurement
 static long	startTime = 0;
+static int noteShift = 0;
 //-------------------------------------------------------------------------
 const unsigned char tSwTable[64] = {
 
@@ -214,7 +215,7 @@ static void analyseTouchSwitch( void )
 			startTime = 0;
 			printf("Switch Data:%04x\n",newSwdata);
 			
-			note = tSwTable[newSwdata & 0x3f];
+			note = tSwTable[newSwdata & 0x3f] + noteShift;
 			lastSwData = newSwdata;
 			if ( note != 0 ){
 				vel = 0x7f;
@@ -360,9 +361,10 @@ static void analyseVolume( void )
 //-------------------------------------------------------------------------
 //		event Loop
 //-------------------------------------------------------------------------
-void eventLoopInit( void )
+void eventLoopInit( INIT_PRM* prm )
 {
 	sendMessageToMsgf( 0xb0, 0x0b, 0 );
+	noteShift = prm->transpose;
 }
 //-------------------------------------------------------------------------
 void eventLoop( void )

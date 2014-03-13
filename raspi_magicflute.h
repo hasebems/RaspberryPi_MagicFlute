@@ -9,7 +9,13 @@
 #ifndef __ToneGenerator__raspi_magicflute__
 #define __ToneGenerator__raspi_magicflute__
 
-void eventLoopInit( void );
+typedef struct {
+
+	int		transpose;		// Transpose
+
+} INIT_PRM;
+
+void eventLoopInit( INIT_PRM* prm );
 void eventLoop( void );
 
 void initHw( void );

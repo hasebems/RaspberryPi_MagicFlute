@@ -25,16 +25,17 @@
 //-------------------------------------------------------------------------
 //			Variables
 //-------------------------------------------------------------------------
-static const char *device = "plughw:0,0";                     /* playback device */
+static const char *device = "plughw:0,0";               /* playback device */
 static snd_pcm_format_t format = SND_PCM_FORMAT_S16;    /* sample format */
-static unsigned int samplingRate = 44100;                       /* stream rate */
+static unsigned int samplingRate = 44100;               /* stream rate */
 static unsigned int channels = 1;                       /* count of channels */
 static unsigned int buffer_time = 60000;                /* ring buffer length in us */
 static unsigned int period_time = 15000;                /* period time in us */
-static double freq = 440;                               /* sinusoidal wave frequency in Hz */
-static int verbose = 0;                                 /* verbose flag */
-static int resample = 1;                                /* enable alsa-lib resampling */
-static int period_event = 0;                            /* produce poll event after each period */
+static double freq = 440;                /* sinusoidal wave frequency in Hz */
+static int verbose = 0;                  /* verbose flag */
+static int resample = 1;                 /* enable alsa-lib resampling */
+static int period_event = 0;             /* produce poll event after each period */
+static int transpose = 0;
 
 static snd_pcm_sframes_t buffer_size;
 static snd_pcm_sframes_t period_size;
@@ -333,8 +334,11 @@ static int soundGenerateLoop( snd_pcm_t *handle )
 	snd_pcm_sframes_t avail;
 	snd_pcm_state_t state;
 	int err, first = 1;
+
+	INIT_PRM	prm;
+	prm.transpose = transpose;
 	
-	eventLoopInit();
+	eventLoopInit(&prm);
 	
 	while (1) {
 		eventLoop();
@@ -510,6 +514,8 @@ static int optionCommand(int morehelp, int argc, char *argv[])
 			case 'e':
 				period_event = 1;
 				break;
+			case 't':
+				transpose = atoi(optarg);
 			default: break;
 		}
 	}
