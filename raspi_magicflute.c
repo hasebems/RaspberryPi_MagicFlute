@@ -81,31 +81,36 @@ const unsigned char tExpValue[MAX_EXP_WIDTH] = {
 static int startCount = 0;
 static int standardPrs = 0;	//	standard pressure value
 static int stockPrs = 0;
+#define		FIRST_COUNT			100
+#define		COUNT_OFFSET		1000
+#define		STABLE_COUNT		(COUNT_OFFSET+50)
 //-------------------------------------------------------------------------
 static int ExcludeAtmospheric( int value )
 {
 	int tmpVal;
 	
-	if ( startCount < 100 ){	//	not calculate at first 100 times
+	if ( startCount < FIRST_COUNT ){	//	not calculate at first FIRST_COUNT times
 		startCount++;
-		if ( startCount == 100 ){
+		if ( startCount == FIRST_COUNT ){
 			standardPrs = value;
 			printf("Standard Pressure is %d\n",value);
 		}
 		return 0;
 	}
 	else {
-		if (( startCount > 1000 ) && (( stockPrs-1 <= value ) && ( stockPrs+1 >= value ))){
+		if (( startCount > COUNT_OFFSET ) &&
+			(( stockPrs-1 <= value ) && ( stockPrs+1 >= value ))){
 			startCount++;
-			if ( startCount > 1050 ){	//	when pressure keep same value by 50 times
-				startCount = 1000;
+			if ( startCount > STABLE_COUNT ){
+				//	when pressure keep same value by 50 times
+				startCount = COUNT_OFFSET;
 				standardPrs = stockPrs;
 				printf("Change Standard Pressure! %d\n",stockPrs);
 			}
 		}
 		else if (( value >= standardPrs+2 ) || ( value <= standardPrs-2 )){
 			stockPrs = value;
-			startCount = 1001;
+			startCount = COUNT_OFFSET+1;
 		}
 		
 		tmpVal = value - standardPrs;
@@ -121,6 +126,7 @@ static int currentPressure = 0;
 static void analysePressure( void )
 {
 	int tempPrs = getPressure();
+
 	if ( tempPrs != 0 ){
 		int idt = ExcludeAtmospheric( tempPrs );
 		if ( currentPressure != idt ){
@@ -196,6 +202,8 @@ static void analyseTouchSwitch( void )
 	struct	timeval tstr;
 
 	newSwdata = getTchSwData();
+	if ( newSwdata == 0xffff ) return;
+	
 	if ( startTime == 0 ){
 		//	first time pushing
 		if ( newSwdata != lastSwData ){
@@ -322,11 +330,13 @@ static unsigned char partPortamento = 0;
 static void analyseVolume( void )
 {
 	unsigned char vol = getVolume(adCh);
-	if ( vol > 100 ) vol = 100;
-	vol = (unsigned char)(((int)vol*127)/100);
+	if ( vol != 255 ){
+		if ( vol > 100 ) vol = 100;
+		vol = (unsigned char)(((int)vol*127)/100);
+	}
+	else adCh = -1;
 
 	switch ( adCh ){
-		default:
 		case 0:{
 			if ( vol != partVolume ){
 				partVolume = vol;
@@ -351,6 +361,7 @@ static void analyseVolume( void )
 			}
 			break;
 		}
+		default: break;
 	}
 
 	adCh++;

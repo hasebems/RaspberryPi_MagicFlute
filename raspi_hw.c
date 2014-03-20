@@ -79,28 +79,34 @@ void writeI2c( unsigned char adrs, unsigned char data )
 {
 	unsigned char buf[2];
 	
-	buf[0] = adrs;									// Commands for performing a ranging
+	// Commands for performing a ranging
+	buf[0] = adrs;
 	buf[1] = data;
 	
-	if ((write(i2cDscript, buf, 2)) != 2) {			// Write commands to the i2c port
+	if ((write(i2cDscript, buf, 2)) != 2) {
+		// Write commands to the i2c port
 		printf("Error writing to i2c slave(I2C)\n");
-		exit(1);
+		//exit(1);
 	}
 }
 //-------------------------------------------------------------------------
 unsigned char readI2c( unsigned char adrs )
 {
 	unsigned char buf[2];
-	buf[0] = adrs;									// This is the register we wish to read from
+	buf[0] = adrs;						// This is the register we wish to read from
 	
-	if (write(i2cDscript, buf, 1) != 1) {			// Send the register to read from
+	if (write(i2cDscript, buf, 1) != 1) {
+		// Send the register to read from
 		printf("Error writing to i2c slave(I2C:read)\n");
-		exit(1);
+		//exit(1);
+		return 0;
 	}
 	
-	if (read(i2cDscript, buf, 1) != 1) {					// Read back data into buf[]
+	if (read(i2cDscript, buf, 1) != 1) {
+		// Read back data into buf[]
 		printf("Unable to read from slave(I2C)\n");
-		exit(1);
+		//exit(1);
+		return 0;
 	}
 	
 	return buf[0];
@@ -326,14 +332,15 @@ void initMPR121( void )
 //-------------------------------------------------------------------------
 unsigned short getTchSwData( void )
 {
-	unsigned char buf[2];
+	unsigned char buf[2] = { 0xff, 0xff };
 
 	//	Start Access
 	accessMPR121();
 	
 	if (read(i2cDscript, buf, 2) != 2) {	// Read back data into buf[]
 		printf("Unable to read from slave(Touch)\n");
-		exit(1);
+		//exit(1);
+		return 0xffff;
 	}
 	
 	return (buf[1]<<8) | buf[0];
@@ -411,7 +418,7 @@ void setNext( int adNum )
 	
 	if ((write(i2cDscript, buf, 3)) != 3) {			// Write commands to the i2c port
 		printf("Error writing to i2c slave(ADC)\n");
-		exit(1);
+		//exit(1);
 	}
 }
 //-------------------------------------------------------------------------
@@ -422,12 +429,14 @@ unsigned char getValue( void )
 	
 	if (write(i2cDscript, buf, 1) != 1) {			// Send the register to read from
 		printf("Error writing to i2c slave(ADC:read)\n");
-		exit(1);
+		//exit(1);
+		return 0xff;
 	}
 	
 	if (read(i2cDscript, buf, 1) != 1) {					// Read back data into buf[]
 		printf("Unable to read from slave(ADC)\n");
-		exit(1);
+		//exit(1);
+		return 0xff;
 	}
 	
 	return buf[0];
