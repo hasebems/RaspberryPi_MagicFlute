@@ -201,7 +201,7 @@ static void makeKeyOn( unsigned short swdata )
 
 	printf("Switch Data:%04x\n",swdata);
 	
-	note = tSwTable[swdata & 0x3f]
+	note = tSwTable[swdata & 0x3f];
 	blinkLED(note);
 	
 	//	make real note number (fixed Do)
@@ -232,7 +232,7 @@ const int tDeadBandPoint[8][8] = {
 	{	1,	1,	1,	0,	0,	0,	1,	1	},	//	so
 	{	2,	1,	1,	1,	0,	0,	0,	1	},	//	la
 	{	2,	2,	1,	1,	1,	0,	0,	0	},	//	ti
-	{	3,	2,	2,	1,	1,	1,	0,	0	},	//	do
+	{	3,	2,	2,	1,	1,	1,	0,	0	}	//	do
 };
 
 //-------------------------------------------------------------------------
@@ -261,9 +261,9 @@ static void analyseTouchSwitch( void )
 			deadBand = 3;
 		}
 		else {
-			int	new = tSx2DoTable[newSwdata&SW_SW];
-			int old = tSx2DoTable[lastSwData&SW_SW];
-			deadBand = tDeadBandPoint[new][old];
+			int	newNum = tSx2DoTable[newSwdata&SX_SW];
+			int oldNum = tSx2DoTable[lastSwData&SX_SW];
+			deadBand = tDeadBandPoint[newNum][oldNum];
 		}
 		
 		if ( startTime == 0 ){
