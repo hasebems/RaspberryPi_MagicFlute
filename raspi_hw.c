@@ -348,7 +348,7 @@ unsigned short getTchSwData( void )
 
 
 //-------------------------------------------------------------------------
-//			MPR121 (Touch Sencer : I2c Device)
+//			BlinkM ( Full Color LED : I2c Device)
 //-------------------------------------------------------------------------
 void accessBlinkM( void )
 {

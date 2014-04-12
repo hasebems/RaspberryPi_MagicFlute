@@ -149,37 +149,7 @@ static void analysePressure( void )
 }
 
 //-------------------------------------------------------------------------
-//		Touch Sencer Input
-//-------------------------------------------------------------------------
-static unsigned short newSwdata;
-static unsigned char lastNote = 0;
-static unsigned short lastSwData = 0;
-//	Time Measurement
-static long	startTime = 0;
-static int noteShift = 0;
-//-------------------------------------------------------------------------
-const unsigned char tSwTable[64] = {
-
-	//	 ooo   oox   oxo   oxx   xoo   xox   xxo   xxx
-	//	0x48, 0x40, 0x41, 0x3e, 0x43, 0x47, 0x45, 0x3c,
-	//	0x54, 0x4c, 0x4d, 0x4a, 0x4f, 0x53, 0x51, 0x48,
-	//	0x48, 0x40, 0x41, 0x3e, 0x43, 0x47, 0x45, 0x3c,
-	//	0x54, 0x4c, 0x4d, 0x4a, 0x4f, 0x53, 0x51, 0x48,
-	//	0x47, 0x3f, 0x40, 0x3d, 0x42, 0x46, 0x44, 0x3b,
-	//	0x53, 0x4b, 0x4c, 0x49, 0x4e, 0x52, 0x50, 0x47,
-	//	0x49, 0x41, 0x42, 0x3f, 0x44, 0x48, 0x46, 0x3d,
-	//	0x55, 0x4d, 0x4e, 0x4b, 0x50, 0x54, 0x52, 0x49
-
-//   ooo   oox   oxo   oxx   xoo   xox   xxo   xxx
-	0x54, 0x4f, 0x4d, 0x51, 0x4c, 0x53, 0x4a, 0x48,		//	ooo
-	0x53, 0x4e, 0x4c, 0x50, 0x4b, 0x52, 0x49, 0x47,		//	oox
-	0x54, 0x4f, 0x4d, 0x51, 0x4c, 0x53, 0x4a, 0x48,		//	oxo
-	0x55, 0x50, 0x4e, 0x52, 0x4d, 0x54, 0x4b, 0x49,		//	oxx
-	0x48, 0x43, 0x59, 0x45, 0x58, 0x47, 0x56, 0x54,		//	xoo
-	0x47, 0x42, 0x58, 0x44, 0x57, 0x46, 0x55, 0x53,		//	xox
-	0x48, 0x43, 0x59, 0x45, 0x58, 0x47, 0x56, 0x54,		//	xxo
-	0x49, 0x44, 0x5a, 0x46, 0x59, 0x48, 0x57, 0x55		//	xxx
-};
+//		Blink LED
 //-------------------------------------------------------------------------
 const unsigned char tNoteToColor[12][3] = {
 	{ 0xff, 0x00, 0x00 },
@@ -196,47 +166,127 @@ const unsigned char tNoteToColor[12][3] = {
 	{ 0x40, 0x00, 0x80 }
 };
 //-------------------------------------------------------------------------
-static void analyseTouchSwitch( void )
+void blinkLED( unsigned char movableDo )
+{
+	changeColor((unsigned char*)tNoteToColor[(movableDo-48)%12]);
+}
+
+//-------------------------------------------------------------------------
+//		Touch Sencer Input
+//-------------------------------------------------------------------------
+static unsigned short newSwdata;
+static unsigned char lastNote = 0;
+static unsigned short lastSwData = 0;
+//	Time Measurement
+static long	startTime = 0;
+static int noteShift = 0;
+static int deadBand = 0;
+//-------------------------------------------------------------------------
+const unsigned char tSwTable[64] = {
+
+//   ooo   oox   oxo   oxx   xoo   xox   xxo   xxx	right hand
+	0x54, 0x4f, 0x4d, 0x51, 0x4c, 0x53, 0x4a, 0x48,		//	ooo	left hand
+	0x53, 0x4e, 0x4c, 0x50, 0x4b, 0x52, 0x49, 0x47,		//	oox
+	0x54, 0x4f, 0x4d, 0x51, 0x4c, 0x53, 0x4a, 0x48,		//	oxo
+	0x55, 0x50, 0x4e, 0x52, 0x4d, 0x54, 0x4b, 0x49,		//	oxx
+	0x48, 0x43, 0x59, 0x45, 0x58, 0x47, 0x56, 0x54,		//	xoo
+	0x47, 0x42, 0x58, 0x44, 0x57, 0x46, 0x55, 0x53,		//	xox
+	0x48, 0x43, 0x59, 0x45, 0x58, 0x47, 0x56, 0x54,		//	xxo
+	0x49, 0x44, 0x5a, 0x46, 0x59, 0x48, 0x57, 0x55		//	xxx
+};
+//-------------------------------------------------------------------------
+static void makeKeyOn( unsigned short swdata )
 {
 	unsigned char note, vel;
+
+	printf("Switch Data:%04x\n",swdata);
+	
+	note = tSwTable[swdata & 0x3f]
+	blinkLED(note);
+	
+	//	make real note number (fixed Do)
+	if ( note != 0 ){
+		vel = 0x7f;
+		note += noteShift;
+		lastNote = note;
+	}
+	else {
+		note = lastNote;
+		vel = 0x00;
+	}
+	sendMessageToMsgf( 0x90, note, vel );
+}
+//-------------------------------------------------------------------------
+#define		OCT_SW		0x20
+#define		SF_SW		0x10
+#define		CRO_SW		0x08
+#define		SX_SW		0x07
+//-------------------------------------------------------------------------
+const unsigned char tSx2DoTable[8] = {7,4,3,5,2,6,1,0};
+const int tDeadBandPoint[8][8] = {
+//		do, re, mi, fa, so, la, ti, do	before
+	{	0,	0,	1,	1,	1,	2,	2,	3	},	//	do	after
+	{	0,	0,	0,	1,	1,	1,	2,	2	},	//	re
+	{	1,	0,	0,	0,	1,	1,	1,	2	},	//	mi
+	{	1,	1,	0,	0,	0,	1,	1,	1	},	//	fa
+	{	1,	1,	1,	0,	0,	0,	1,	1	},	//	so
+	{	2,	1,	1,	1,	0,	0,	0,	1	},	//	la
+	{	2,	2,	1,	1,	1,	0,	0,	0	},	//	ti
+	{	3,	2,	2,	1,	1,	1,	0,	0	},	//	do
+};
+
+//-------------------------------------------------------------------------
+static void analyseTouchSwitch( void )
+{
 	struct	timeval tstr;
+	long	crntTime;
 
 	newSwdata = getTchSwData();
 	if ( newSwdata == 0xffff ) return;
-	
-	if ( startTime == 0 ){
-		//	first time pushing
-		if ( newSwdata != lastSwData ){
-			gettimeofday(&tstr, NULL);
-			startTime = tstr.tv_sec * 1000 + tstr.tv_usec/1000;
-		}
+
+	if (((~newSwdata)&lastSwData) == SF_SW){
+		// sf sw off
+		lastSwData = newSwdata;
+		return;
 	}
-	else {
-		gettimeofday(&tstr, NULL);
-		long currentTime = tstr.tv_sec * 1000 + tstr.tv_usec/1000;
-		long waitTime = 30;
 
-		//	magic algorithm for earier judgement
-		if ((~(lastSwData&0x07)&0x07) & (newSwdata&0x07)) waitTime = 60;
-
-		if ( currentTime - startTime > waitTime ){	//	over 50msec
-			startTime = 0;
-			printf("Switch Data:%04x\n",newSwdata);
-			
-			note = tSwTable[newSwdata & 0x3f] + noteShift;
-			lastSwData = newSwdata;
-			if ( note != 0 ){
-				vel = 0x7f;
-				lastNote = note;
-				changeColor((unsigned char*)tNoteToColor[(note-48)%12]);
+	gettimeofday(&tstr, NULL);
+	crntTime = tstr.tv_sec * 1000 + tstr.tv_usec/1000;
+		
+	if ( newSwdata != lastSwData ){
+		if (((newSwdata&OCT_SW)&(~lastSwData&OCT_SW)) == OCT_SW){	//	oct sw on
+			deadBand = 3;
+		}
+		else if (((~newSwdata&OCT_SW)&(lastSwData&OCT_SW)) == OCT_SW){	// oct sw off
+			deadBand = 3;
+		}
+		else {
+			int	new = tSx2DoTable[newSwdata&SW_SW];
+			int old = tSx2DoTable[lastSwData&SW_SW];
+			deadBand = tDeadBandPoint[new][old];
+		}
+		
+		if ( startTime == 0 ){
+			//	for the first time
+			if ( deadBand == 0 ){
+				//	Direct KeyOn
+				makeKeyOn(newSwdata);
+				startTime = 0;
 			}
 			else {
-				note = lastNote;
-				vel = 0x00;
+				//	enter deadZone
+				startTime = crntTime;
 			}
-			sendMessageToMsgf( 0x90, note, vel );
 		}
 	}
+
+	if ((startTime != 0) &&
+		( crntTime - startTime > 30*deadBand )){	//	over 30msec * deadBand
+		makeKeyOn(newSwdata);
+		startTime = 0;
+	}
+
+	lastSwData = newSwdata;
 }
 
 //-------------------------------------------------------------------------
