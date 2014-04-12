@@ -83,7 +83,8 @@ static int standardPrs = 0;	//	standard pressure value
 static int stockPrs = 0;
 #define		FIRST_COUNT			100
 #define		COUNT_OFFSET		1000
-#define		STABLE_COUNT		(COUNT_OFFSET+50)
+#define		STABLE_COUNT		30
+#define		NOISE_WIDTH			1
 //-------------------------------------------------------------------------
 static int ExcludeAtmospheric( int value )
 {
@@ -97,24 +98,27 @@ static int ExcludeAtmospheric( int value )
 		}
 		return 0;
 	}
+
 	else {
 		if (( startCount > COUNT_OFFSET ) &&
-			(( stockPrs-1 <= value ) && ( stockPrs+1 >= value ))){
+			(( stockPrs-NOISE_WIDTH <= value ) &&
+			 ( stockPrs+NOISE_WIDTH >= value ))){
 			startCount++;
-			if ( startCount > STABLE_COUNT ){
-				//	when pressure keep same value by 50 times
+			if ( startCount > COUNT_OFFSET+STABLE_COUNT ){
+				//	when pressure keep same value by STABLE_COUNT times
 				startCount = COUNT_OFFSET;
 				standardPrs = stockPrs;
 				printf("Change Standard Pressure! %d\n",stockPrs);
 			}
 		}
-		else if (( value >= standardPrs+2 ) || ( value <= standardPrs-2 )){
+		else if (( value > standardPrs+NOISE_WIDTH ) ||
+				 ( value < standardPrs-NOISE_WIDTH )){
 			stockPrs = value;
 			startCount = COUNT_OFFSET+1;
 		}
 		
 		tmpVal = value - standardPrs;
-		if (( tmpVal < 2 ) && ( tmpVal > -2 )) tmpVal = 0;
+		if (( tmpVal <= NOISE_WIDTH ) && ( tmpVal >= -NOISE_WIDTH )) tmpVal = 0;
 		return tmpVal;
 	}
 }
@@ -222,6 +226,9 @@ static void makeKeyOn( unsigned short swdata )
 #define		CRO_SW		0x08
 #define		SX_SW		0x07
 //-------------------------------------------------------------------------
+//	Adjustable Value
+#define		DEADBAND_POINT_TIME		40		//msec
+//-------------------------------------------------------------------------
 const unsigned char tSx2DoTable[8] = {7,4,3,5,2,6,1,0};
 const int tDeadBandPoint[8][8] = {
 //		do, re, mi, fa, so, la, ti, do	before
@@ -234,7 +241,6 @@ const int tDeadBandPoint[8][8] = {
 	{	2,	2,	1,	1,	1,	0,	0,	0	},	//	ti
 	{	3,	2,	2,	1,	1,	1,	0,	0	}	//	do
 };
-
 //-------------------------------------------------------------------------
 static void analyseTouchSwitch( void )
 {
@@ -254,10 +260,12 @@ static void analyseTouchSwitch( void )
 	crntTime = tstr.tv_sec * 1000 + tstr.tv_usec/1000;
 		
 	if ( newSwdata != lastSwData ){
-		if (((newSwdata&OCT_SW)&(~lastSwData&OCT_SW)) == OCT_SW){	//	oct sw on
+		if (((newSwdata&OCT_SW)&(~lastSwData&OCT_SW)) == OCT_SW){
+			//	oct sw on
 			deadBand = 3;
 		}
-		else if (((~newSwdata&OCT_SW)&(lastSwData&OCT_SW)) == OCT_SW){	// oct sw off
+		else if (((~newSwdata&OCT_SW)&(lastSwData&OCT_SW)) == OCT_SW){
+			// oct sw off
 			deadBand = 3;
 		}
 		else {
@@ -274,14 +282,15 @@ static void analyseTouchSwitch( void )
 				startTime = 0;
 			}
 			else {
-				//	enter deadZone
+				//	enter deadBand
 				startTime = crntTime;
 			}
 		}
 	}
 
 	if ((startTime != 0) &&
-		( crntTime - startTime > 30*deadBand )){	//	over 30msec * deadBand
+		( crntTime - startTime > DEADBAND_POINT_TIME*deadBand )){
+		//over deadBand
 		makeKeyOn(newSwdata);
 		startTime = 0;
 	}
