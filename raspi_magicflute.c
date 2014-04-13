@@ -178,13 +178,14 @@ void blinkLED( unsigned char movableDo )
 //-------------------------------------------------------------------------
 //		Touch Sencer Input
 //-------------------------------------------------------------------------
-static unsigned short newSwdata;
+static unsigned short newSwData;
 static unsigned char lastNote = 0;
 static unsigned short lastSwData = 0;
 //	Time Measurement
-static long	startTime = 0;
+static long	startTime = 0;	//	!=0 means during deadBand
 static int noteShift = 0;
 static int deadBand = 0;
+static unsigned short tapSwData = 0;
 //-------------------------------------------------------------------------
 const unsigned char tSwTable[64] = {
 
@@ -223,7 +224,6 @@ static void makeKeyOn( unsigned short swdata )
 }
 //-------------------------------------------------------------------------
 #define		OCT_SW		0x30
-#define		SF_SW		0x10
 #define		CRO_SW		0x08
 #define		SX_SW		0x07
 //-------------------------------------------------------------------------
@@ -233,14 +233,14 @@ static void makeKeyOn( unsigned short swdata )
 const unsigned char tSx2DoTable[8] = {7,4,3,5,2,6,1,0};
 const int tDeadBandPoint[8][8] = {
 //		do, re, mi, fa, so, la, ti, do	before
-	{	0,	0,	1,	1,	1,	2,	2,	3	},	//	do	after
+	{	0,	0,	1,	1,	1,	2,	2,	4	},	//	do	after
 	{	0,	0,	0,	1,	1,	1,	2,	2	},	//	re
 	{	1,	0,	0,	0,	1,	1,	1,	2	},	//	mi
 	{	1,	1,	0,	0,	0,	1,	1,	1	},	//	fa
 	{	1,	1,	1,	0,	0,	0,	1,	1	},	//	so
 	{	2,	1,	1,	1,	0,	0,	0,	1	},	//	la
 	{	2,	2,	1,	1,	1,	0,	0,	0	},	//	ti
-	{	3,	2,	2,	1,	1,	1,	0,	0	}	//	do
+	{	4,	2,	2,	1,	1,	1,	0,	0	}	//	do
 };
 //-------------------------------------------------------------------------
 static void analyseTouchSwitch( void )
@@ -248,29 +248,26 @@ static void analyseTouchSwitch( void )
 	struct	timeval tstr;
 	long	crntTime;
 
-	newSwdata = getTchSwData();
-	if ( newSwdata == 0xffff ) return;
-
-//	if (((~newSwdata)&lastSwData) == SF_SW){
-//		// sf sw off
-//		lastSwData = newSwdata;
-//		return;
-//	}
+	newSwData = getTchSwData();
+	if ( newSwData == 0xffff ) return;
 
 	gettimeofday(&tstr, NULL);
 	crntTime = tstr.tv_sec * 1000 + tstr.tv_usec/1000;
 		
-	if ( newSwdata != lastSwData ){
-		if ((newSwdata&OCT_SW)&((~lastSwData)&OCT_SW)){
-			//	oct sw on
-			deadBand = 3;
-		}
-		else if (((~newSwdata)&OCT_SW)&(lastSwData&OCT_SW)){
-			// oct sw off
-			deadBand = 3;
+	if ( newSwData != lastSwData ){
+		if (((newSwData&OCT_SW) & ((~lastSwData)&OCT_SW)) ||
+			(((~newSwData)&OCT_SW) & (lastSwData&OCT_SW))){
+			//	oct sw on/off
+			if ( tapSwData == 0 ){
+				deadBand = 4;
+				tapSwData = lastSwData;
+			}
+			else if ( tapSwData == lastSwData ){
+				deadBand = 0;
+			}
 		}
 		else {
-			int	newNum = tSx2DoTable[newSwdata&SX_SW];
+			int	newNum = tSx2DoTable[newSwData&SX_SW];
 			int oldNum = tSx2DoTable[lastSwData&SX_SW];
 			deadBand = tDeadBandPoint[newNum][oldNum];
 		}
@@ -279,7 +276,7 @@ static void analyseTouchSwitch( void )
 			//	for the first time
 			if ( deadBand == 0 ){
 				//	Direct KeyOn
-				makeKeyOn(newSwdata);
+				makeKeyOn(newSwData);
 				startTime = 0;
 			}
 			else {
@@ -292,11 +289,12 @@ static void analyseTouchSwitch( void )
 	if ((startTime != 0) &&
 		( crntTime - startTime > DEADBAND_POINT_TIME*deadBand )){
 		//over deadBand
-		makeKeyOn(newSwdata);
+		makeKeyOn(newSwData);
 		startTime = 0;
+		tapSwData = 0;
 	}
 
-	lastSwData = newSwdata;
+	lastSwData = newSwData;
 }
 
 //-------------------------------------------------------------------------
