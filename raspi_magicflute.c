@@ -381,7 +381,7 @@ static void analyseKeyboard( void )
 //		Volume Input
 //-------------------------------------------------------------------------
 static int adCh = 0;
-static unsigned char partVolume = 100;
+static unsigned char partNoteShift = 64;
 static unsigned char partModulation = 0;
 static unsigned char partPortamento = 0;
 //-------------------------------------------------------------------------
@@ -396,10 +396,11 @@ static void analyseVolume( void )
 
 	switch ( adCh ){
 		case 0:{
-			if ( vol != partVolume ){
-				partVolume = vol;
-				sendMessageToMsgf( 0xb0, 0x07, partVolume );
-				printf("volume value: %d\n",partVolume);
+			if ( vol != partNoteShift ){
+				partNoteShift = vol;
+				unsigned char ns = ((int)partNoteShift-64)/10 + 64;
+				sendMessageToMsgf( 0xb0, 0x0c, partNoteShift/10 );
+				printf("Note Shift value: %d\n",partNoteShift);
 			}
 			break;
 		}
