@@ -399,7 +399,7 @@ static void analyseVolume( void )
 			if ( vol != partNoteShift ){
 				partNoteShift = vol;
 				unsigned char ns = ((int)partNoteShift-64)/10 + 64;
-				sendMessageToMsgf( 0xb0, 0x0c, partNoteShift );
+				sendMessageToMsgf( 0xb0, 0x0c, ns );
 				printf("Note Shift value: %d\n",partNoteShift);
 			}
 			break;
