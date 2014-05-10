@@ -228,7 +228,7 @@ static void makeKeyOn( unsigned short swdata )
 #define		SX_SW		0x07
 //-------------------------------------------------------------------------
 //	Adjustable Value
-#define		DEADBAND_POINT_TIME		40		//msec
+#define		DEADBAND_POINT_TIME		50		//msec
 //-------------------------------------------------------------------------
 const unsigned char tSx2DoTable[8] = {7,4,3,5,2,6,1,0};
 const int tDeadBandPoint[8][8] = {
