@@ -226,19 +226,21 @@ static void makeKeyOn( unsigned short swdata )
 #define		OCT_SW		0x30
 #define		CRO_SW		0x08
 #define		SX_SW		0x07
+#define		TAP_FLAG	0x8000
 //-------------------------------------------------------------------------
 //	Adjustable Value
 #define		DEADBAND_POINT_TIME		50		//msec
+#define		TAP_DEADBAND_POINT		5
 //-------------------------------------------------------------------------
 const unsigned char tSx2DoTable[8] = {7,4,3,5,2,6,1,0};
 const int tDeadBandPoint[8][8] = {
 //		do, re, mi, fa, so, la, ti, do	before
 	{	0,	0,	1,	1,	1,	2,	2,	4	},	//	do	after
-	{	0,	0,	0,	1,	1,	1,	2,	2	},	//	re
+	{	0,	0,	1,	1,	1,	1,	2,	2	},	//	re
 	{	1,	0,	0,	0,	1,	1,	1,	2	},	//	mi
 	{	1,	1,	0,	0,	0,	1,	1,	1	},	//	fa
 	{	1,	1,	1,	0,	0,	0,	1,	1	},	//	so
-	{	2,	1,	1,	1,	0,	0,	0,	1	},	//	la
+	{	2,	1,	1,	1,	1,	0,	0,	1	},	//	la
 	{	2,	2,	1,	1,	1,	0,	0,	0	},	//	ti
 	{	4,	2,	2,	1,	1,	1,	0,	0	}	//	do
 };
@@ -259,10 +261,10 @@ static void analyseTouchSwitch( void )
 			(((~newSwData)&OCT_SW) & (lastSwData&OCT_SW))){
 			//	oct sw on/off
 			if ( tapSwData == 0 ){
-				deadBand = 4;
-				tapSwData = lastSwData;
+				deadBand = TAP_DEADBAND_POINT;
+				tapSwData = lastSwData|TAP_FLAG;
 			}
-			else if ( tapSwData == lastSwData ){
+			else if ( tapSwData&(~TAP_FLAG) == lastSwData ){
 				deadBand = 0;
 			}
 		}
