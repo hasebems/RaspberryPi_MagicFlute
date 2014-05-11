@@ -276,6 +276,7 @@ static void analyseTouchSwitch( void )
 			(((note%12)<3)&&((lastNote%12)>8)&&((note-lastNote)<4))){
 			startTime = 0;
 			deadBand = 1;
+			printf("Cross Octave Slighly\n");
 		}
 		
 		//	no Deadband
