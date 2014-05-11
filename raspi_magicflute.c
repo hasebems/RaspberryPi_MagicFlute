@@ -268,14 +268,14 @@ static void analyseTouchSwitch( void )
 			int	newNum = tSx2DoTable[newSwData&SX_SW];
 			int oldNum = tSx2DoTable[lastSwData&SX_SW];
 			deadBand = tDeadBandPoint[newNum][oldNum];
+		}
 
-			// check crossing octave slightly
-			unsigned char note = tSwTable[newSwData & ALL_SW];
-			if ((((note%12)>8)&&((lastNote%12)<3)&&((lastNote-note)<4)) ||
-				(((note%12)<3)&&((lastNote%12)>8)&&((note-lastNote)<4))){
-				startTime = 0;
-				deadBand = 1;
-			}
+		// check crossing octave slightly
+		unsigned char note = tSwTable[newSwData & ALL_SW];
+		if ((((note%12)>8)&&((lastNote%12)<3)&&((lastNote-note)<4)) ||
+			(((note%12)<3)&&((lastNote%12)>8)&&((note-lastNote)<4))){
+			startTime = 0;
+			deadBand = 1;
 		}
 		
 		//	no Deadband
@@ -292,6 +292,8 @@ static void analyseTouchSwitch( void )
 				sendMessageToMsgf( 0x90, lastNote+noteShift+0x3c, 0x7f );
 			}
 		}
+		
+		//	update lastSwData
 		lastSwData = newSwData;
 	}
 
