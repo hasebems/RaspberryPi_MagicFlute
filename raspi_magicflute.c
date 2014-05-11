@@ -194,7 +194,7 @@ static int deadBand = 0;
 //-------------------------------------------------------------------------
 //	Adjustable Value
 #define		DEADBAND_POINT_TIME		50		//	[msec]
-#define		TAP_DEADBAND_POINT		6		//	300msec
+#define		OCT_DEADBAND_POINT		6		//	300msec
 //-------------------------------------------------------------------------
 const unsigned char tSwTable[64] = {
 	
@@ -213,14 +213,14 @@ const unsigned char tSwTable[64] = {
 const unsigned char tSx2DoTable[8] = {7,4,3,5,2,6,1,0};
 const int tDeadBandPoint[8][8] = {
 //		do, re, mi, fa, so, la, ti, do	before
-	{	0,	0,	1,	1,	1,	2,	2,	4	},	//	do	after
-	{	0,	0,	1,	1,	1,	1,	2,	2	},	//	re
+	{	0,	0,	1,	1,	1,	2,	3,	4	},	//	do	after
+	{	0,	0,	1,	1,	1,	1,	2,	3	},	//	re
 	{	1,	0,	0,	0,	1,	1,	1,	2	},	//	mi
 	{	1,	1,	0,	0,	0,	1,	1,	1	},	//	fa
 	{	1,	1,	1,	0,	0,	0,	1,	1	},	//	so
 	{	2,	1,	1,	1,	1,	0,	0,	1	},	//	la
-	{	2,	2,	1,	1,	1,	0,	0,	0	},	//	ti
-	{	4,	2,	2,	1,	1,	1,	0,	0	}	//	do
+	{	3,	2,	1,	1,	1,	0,	0,	0	},	//	ti
+	{	4,	3,	2,	1,	1,	1,	0,	0	}	//	do
 };
 //-------------------------------------------------------------------------
 static void judgeSendingMessage( long diffTime, unsigned short swdata )
@@ -255,7 +255,7 @@ static void analyseTouchSwitch( void )
 			(((~newSwData)&OCT_SW) & (lastSwData&OCT_SW))){
 			//	oct sw on/off
 			if ( tapSwData == 0 ){
-				deadBand = TAP_DEADBAND_POINT;
+				deadBand = OCT_DEADBAND_POINT;
 				tapSwData = lastSwData|TAP_FLAG;
 			}
 			else if ( tapSwData&(~TAP_FLAG) == newSwData ){
@@ -272,8 +272,8 @@ static void analyseTouchSwitch( void )
 
 		// check crossing octave slightly
 		unsigned char note = tSwTable[newSwData & ALL_SW];
-		if ((((note%12)>8)&&((lastNote%12)<3)&&((lastNote-note)<4)) ||
-			(((note%12)<3)&&((lastNote%12)>8)&&((note-lastNote)<4))){
+		if ((( lastNote > note )&&((note%12)>8)&&((lastNote%12)<3)&&((lastNote-note)<4)) ||
+			(( lastNote < note )&&((note%12)<3)&&((lastNote%12)>8)&&((note-lastNote)<4))){
 			startTime = 0;
 			deadBand = 1;
 			printf("Cross Octave Slighly\n");
