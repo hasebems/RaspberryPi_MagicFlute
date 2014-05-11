@@ -223,7 +223,7 @@ const int tDeadBandPoint[8][8] = {
 	{	4,	2,	2,	1,	1,	1,	0,	0	}	//	do
 };
 //-------------------------------------------------------------------------
-static void judgeSendingMessage( long diffTime, unsigned short swData )
+static void judgeSendingMessage( long diffTime, unsigned short swdata )
 {
 	if ( startTime != 0 ){
 		if ( diffTime > DEADBAND_POINT_TIME*deadBand ){
@@ -232,7 +232,6 @@ static void judgeSendingMessage( long diffTime, unsigned short swData )
 			lastNote = tSwTable[swdata & 0x3f];
 			blinkLED(lastNote);
 			sendMessageToMsgf( 0x90, lastNote+noteShift, 0x7f );
-			makeKeyOn(lastNote);
 			startTime = 0;
 			tapSwData = 0;
 		}
