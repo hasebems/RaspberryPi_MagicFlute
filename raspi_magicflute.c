@@ -178,36 +178,36 @@ void blinkLED( unsigned char movableDo )
 //-------------------------------------------------------------------------
 //		Touch Sencer Input
 //-------------------------------------------------------------------------
-//static unsigned short newSwData;
 static unsigned char lastNote = 0;
 static unsigned short lastSwData = 0;
+static unsigned short tapSwData = 0;
+static int noteShift = 0;
 //	Time Measurement
 static long	startTime = 0;	//	!=0 means during deadBand
-static int noteShift = 0;
 static int deadBand = 0;
-static unsigned short tapSwData = 0;
 //-------------------------------------------------------------------------
 #define		OCT_SW		0x30
 #define		CRO_SW		0x08
 #define		SX_SW		0x07
+#define		ALL_SW		(OCT_SW|CRO_SW|SX_SW)
 #define		TAP_FLAG	0x8000
 //-------------------------------------------------------------------------
 //	Adjustable Value
-#define		DEADBAND_POINT_TIME		50		//msec
-#define		TAP_DEADBAND_POINT		5
+#define		DEADBAND_POINT_TIME		50		//	[msec]
+#define		TAP_DEADBAND_POINT		6		//	300msec
 //-------------------------------------------------------------------------
 const unsigned char tSwTable[64] = {
 	
 	//   ooo   oox   oxo   oxx   xoo   xox   xxo   xxx	right hand
-	//	do(up)  so    fa    la    mi    ti    re    do
-	0x48, 0x43, 0x41, 0x45, 0x40, 0x47, 0x3e, 0x3c,		//	ooo	left hand
-	0x49, 0x44, 0x42, 0x44, 0x3f, 0x46, 0x3f, 0x3d,		//	oox
-	0x54, 0x4f, 0x4d, 0x51, 0x4c, 0x53, 0x4a, 0x48,		//	oxo
-	0x55, 0x50, 0x4e, 0x50, 0x4b, 0x52, 0x4b, 0x49,		//	oxx
-	0x54, 0x4f, 0x4d, 0x51, 0x4c, 0x53, 0x4a, 0x48,		//	xoo
-	0x55, 0x50, 0x4e, 0x50, 0x4b, 0x52, 0x4b, 0x49,		//	xox
-	0x60, 0x5b, 0x59, 0x5d, 0x58, 0x5f, 0x56, 0x54,		//	xxo
-	0x61, 0x5c, 0x5a, 0x5c, 0x57, 0x5e, 0x57, 0x55		//	xxx
+	//	do(hi) so    fa    la    mi    ti    re    do
+		0x0c, 0x07, 0x05, 0x09, 0x04, 0x0b, 0x02, 0x00,		//	ooo	left hand
+		0x0d, 0x08, 0x06, 0x08, 0x03, 0x0a, 0x03, 0x01,		//	oox
+		0x18, 0x13, 0x11, 0x15, 0x10, 0x17, 0x0e, 0x0c,		//	oxo
+		0x19, 0x14, 0x12, 0x14, 0x0f, 0x16, 0x0f, 0x0d,		//	oxx
+		0x18, 0x13, 0x11, 0x15, 0x10, 0x17, 0x0e, 0x0c,		//	xoo
+		0x19, 0x14, 0x12, 0x14, 0x0f, 0x16, 0x0f, 0x0d,		//	xox
+		0x24, 0x1f, 0x1d, 0x21, 0x1c, 0x23, 0x1a, 0x18,		//	xxo
+		0x25, 0x20, 0x1e, 0x20, 0x1b, 0x22, 0x1b, 0x19		//	xxx
 };
 //-------------------------------------------------------------------------
 const unsigned char tSx2DoTable[8] = {7,4,3,5,2,6,1,0};
@@ -228,10 +228,10 @@ static void judgeSendingMessage( long diffTime, unsigned short swdata )
 	if ( startTime != 0 ){
 		if ( diffTime > DEADBAND_POINT_TIME*deadBand ){
 			//over deadBand
-			printf("Switch Data(delayed):%04x\n",swdata);
-			lastNote = tSwTable[swdata & 0x3f];
+			printf("Switch Data(L):%04x\n",swdata);
+			lastNote = tSwTable[swdata & ALL_SW];
 			blinkLED(lastNote);
-			sendMessageToMsgf( 0x90, lastNote+noteShift, 0x7f );
+			sendMessageToMsgf( 0x90, lastNote+noteShift+0x3c, 0x7f );
 			startTime = 0;
 			tapSwData = 0;
 		}
@@ -259,26 +259,37 @@ static void analyseTouchSwitch( void )
 				tapSwData = lastSwData|TAP_FLAG;
 			}
 			else if ( tapSwData&(~TAP_FLAG) == newSwData ){
+				//	return past state
 				deadBand = 0;
 			}
 		}
 		else {
+			//	except oct
 			int	newNum = tSx2DoTable[newSwData&SX_SW];
 			int oldNum = tSx2DoTable[lastSwData&SX_SW];
 			deadBand = tDeadBandPoint[newNum][oldNum];
+
+			// check crossing octave slightly
+			unsigned char note = tSwTable[newSwData & ALL_SW];
+			if ((((note%12)>8)&&((lastNote%12)<3)&&((lastNote-note)<4)) ||
+				(((note%12)<3)&&((lastNote%12)>8)&&((note-lastNote)<4))){
+				startTime = 0;
+				deadBand = 1;
+			}
 		}
 		
+		//	no Deadband
 		if ( startTime == 0 ){
 			if ( deadBand != 0 ){
-				//	start DeadBand
+				//	start Deadband
 				startTime = crntTime;
 			}
 			else {
 				//	Direct KeyOn
-				printf("Switch Data(direct ):%04x\n",newSwData);
-				lastNote = tSwTable[newSwData & 0x3f];
+				printf("Switch Data(D):%04x\n",newSwData);
+				lastNote = tSwTable[newSwData & ALL_SW];
 				blinkLED(lastNote);
-				sendMessageToMsgf( 0x90, lastNote+noteShift, 0x7f );
+				sendMessageToMsgf( 0x90, lastNote+noteShift+0x3c, 0x7f );
 			}
 		}
 		lastSwData = newSwData;
