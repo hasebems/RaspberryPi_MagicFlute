@@ -228,7 +228,7 @@ static void judgeSendingMessage( long diffTime, unsigned short swdata )
 	if ( startTime != 0 ){
 		if ( diffTime > DEADBAND_POINT_TIME*deadBand ){
 			//over deadBand
-			printf("Switch Data(L):%04x\n",swdata);
+			printf("Switch Data(L%d):%04x\n",deadBand,swdata);
 			lastNote = tSwTable[swdata & ALL_SW];
 			blinkLED(lastNote);
 			sendMessageToMsgf( 0x90, lastNote+noteShift+0x3c, 0x7f );
@@ -286,7 +286,7 @@ static void analyseTouchSwitch( void )
 			}
 			else {
 				//	Direct KeyOn
-				printf("Switch Data(D):%04x\n",newSwData);
+				printf("Switch Data(D0):%04x\n",newSwData);
 				lastNote = tSwTable[newSwData & ALL_SW];
 				blinkLED(lastNote);
 				sendMessageToMsgf( 0x90, lastNote+noteShift+0x3c, 0x7f );
