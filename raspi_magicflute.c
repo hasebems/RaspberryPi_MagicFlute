@@ -172,7 +172,7 @@ const unsigned char tNoteToColor[12][3] = {
 //-------------------------------------------------------------------------
 void blinkLED( unsigned char movableDo )
 {
-	changeColor((unsigned char*)tNoteToColor[(movableDo-48)%12]);
+	changeColor((unsigned char*)tNoteToColor[movableDo%12]);
 }
 
 //-------------------------------------------------------------------------
