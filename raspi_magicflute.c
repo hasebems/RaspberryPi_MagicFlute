@@ -178,7 +178,7 @@ void blinkLED( unsigned char movableDo )
 //-------------------------------------------------------------------------
 //		Touch Sencer Input
 //-------------------------------------------------------------------------
-static unsigned short newSwData;
+//static unsigned short newSwData;
 static unsigned char lastNote = 0;
 static unsigned short lastSwData = 0;
 //	Time Measurement
@@ -186,42 +186,6 @@ static long	startTime = 0;	//	!=0 means during deadBand
 static int noteShift = 0;
 static int deadBand = 0;
 static unsigned short tapSwData = 0;
-//-------------------------------------------------------------------------
-const unsigned char tSwTable[64] = {
-
-//   ooo   oox   oxo   oxx   xoo   xox   xxo   xxx	right hand
-//	do(up)  so    fa    la    mi    ti    re    do
-	0x48, 0x43, 0x41, 0x45, 0x40, 0x47, 0x3e, 0x3c,		//	ooo	left hand
-	0x49, 0x44, 0x42, 0x44, 0x3f, 0x46, 0x3f, 0x3d,		//	oox
-	0x54, 0x4f, 0x4d, 0x51, 0x4c, 0x53, 0x4a, 0x48,		//	oxo
-	0x55, 0x50, 0x4e, 0x50, 0x4b, 0x52, 0x4b, 0x49,		//	oxx
-	0x54, 0x4f, 0x4d, 0x51, 0x4c, 0x53, 0x4a, 0x48,		//	xoo
-	0x55, 0x50, 0x4e, 0x50, 0x4b, 0x52, 0x4b, 0x49,		//	xox
-	0x60, 0x5b, 0x59, 0x5d, 0x58, 0x5f, 0x56, 0x54,		//	xxo
-	0x61, 0x5c, 0x5a, 0x5c, 0x57, 0x5e, 0x57, 0x55		//	xxx
-};
-//-------------------------------------------------------------------------
-static void makeKeyOn( unsigned short swdata )
-{
-	unsigned char note, vel;
-
-	printf("Switch Data:%04x\n",swdata);
-	
-	note = tSwTable[swdata & 0x3f];
-	blinkLED(note);
-	
-	//	make real note number (fixed Do)
-	if ( note != 0 ){
-		vel = 0x7f;
-		note += noteShift;
-		lastNote = note;
-	}
-	else {
-		note = lastNote;
-		vel = 0x00;
-	}
-	sendMessageToMsgf( 0x90, note, vel );
-}
 //-------------------------------------------------------------------------
 #define		OCT_SW		0x30
 #define		CRO_SW		0x08
@@ -231,6 +195,20 @@ static void makeKeyOn( unsigned short swdata )
 //	Adjustable Value
 #define		DEADBAND_POINT_TIME		50		//msec
 #define		TAP_DEADBAND_POINT		5
+//-------------------------------------------------------------------------
+const unsigned char tSwTable[64] = {
+	
+	//   ooo   oox   oxo   oxx   xoo   xox   xxo   xxx	right hand
+	//	do(up)  so    fa    la    mi    ti    re    do
+	0x48, 0x43, 0x41, 0x45, 0x40, 0x47, 0x3e, 0x3c,		//	ooo	left hand
+	0x49, 0x44, 0x42, 0x44, 0x3f, 0x46, 0x3f, 0x3d,		//	oox
+	0x54, 0x4f, 0x4d, 0x51, 0x4c, 0x53, 0x4a, 0x48,		//	oxo
+	0x55, 0x50, 0x4e, 0x50, 0x4b, 0x52, 0x4b, 0x49,		//	oxx
+	0x54, 0x4f, 0x4d, 0x51, 0x4c, 0x53, 0x4a, 0x48,		//	xoo
+	0x55, 0x50, 0x4e, 0x50, 0x4b, 0x52, 0x4b, 0x49,		//	xox
+	0x60, 0x5b, 0x59, 0x5d, 0x58, 0x5f, 0x56, 0x54,		//	xxo
+	0x61, 0x5c, 0x5a, 0x5c, 0x57, 0x5e, 0x57, 0x55		//	xxx
+};
 //-------------------------------------------------------------------------
 const unsigned char tSx2DoTable[8] = {7,4,3,5,2,6,1,0};
 const int tDeadBandPoint[8][8] = {
@@ -245,10 +223,27 @@ const int tDeadBandPoint[8][8] = {
 	{	4,	2,	2,	1,	1,	1,	0,	0	}	//	do
 };
 //-------------------------------------------------------------------------
+static void judgeSendingMessage( long diffTime, unsigned short swData )
+{
+	if ( startTime != 0 ){
+		if ( diffTime > DEADBAND_POINT_TIME*deadBand ){
+			//over deadBand
+			printf("Switch Data(delayed):%04x\n",swdata);
+			lastNote = tSwTable[swdata & 0x3f];
+			blinkLED(lastNote);
+			sendMessageToMsgf( 0x90, lastNote+noteShift, 0x7f );
+			makeKeyOn(lastNote);
+			startTime = 0;
+			tapSwData = 0;
+		}
+	}
+}
+//-------------------------------------------------------------------------
 static void analyseTouchSwitch( void )
 {
 	struct	timeval tstr;
 	long	crntTime;
+	unsigned short	newSwData;
 
 	newSwData = getTchSwData();
 	if ( newSwData == 0xffff ) return;
@@ -264,7 +259,7 @@ static void analyseTouchSwitch( void )
 				deadBand = TAP_DEADBAND_POINT;
 				tapSwData = lastSwData|TAP_FLAG;
 			}
-			else if ( tapSwData&(~TAP_FLAG) == lastSwData ){
+			else if ( tapSwData&(~TAP_FLAG) == newSwData ){
 				deadBand = 0;
 			}
 		}
@@ -275,28 +270,22 @@ static void analyseTouchSwitch( void )
 		}
 		
 		if ( startTime == 0 ){
-			//	for the first time
-			if ( deadBand == 0 ){
-				//	Direct KeyOn
-				makeKeyOn(newSwData);
-				startTime = 0;
-			}
-			else {
-				//	enter deadBand
+			if ( deadBand != 0 ){
+				//	start DeadBand
 				startTime = crntTime;
 			}
+			else {
+				//	Direct KeyOn
+				printf("Switch Data(direct ):%04x\n",newSwData);
+				lastNote = tSwTable[newSwData & 0x3f];
+				blinkLED(lastNote);
+				sendMessageToMsgf( 0x90, lastNote+noteShift, 0x7f );
+			}
 		}
+		lastSwData = newSwData;
 	}
 
-	if ((startTime != 0) &&
-		( crntTime - startTime > DEADBAND_POINT_TIME*deadBand )){
-		//over deadBand
-		makeKeyOn(newSwData);
-		startTime = 0;
-		tapSwData = 0;
-	}
-
-	lastSwData = newSwData;
+	judgeSendingMessage( crntTime-startTime, newSwData );
 }
 
 //-------------------------------------------------------------------------
