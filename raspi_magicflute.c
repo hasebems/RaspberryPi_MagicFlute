@@ -194,7 +194,7 @@ static int deadBand = 0;
 //-------------------------------------------------------------------------
 //	Adjustable Value
 #define		DEADBAND_POINT_TIME		50		//	[msec]
-#define		OCT_DEADBAND_POINT		6		//	300msec
+#define		OCT_DEADBAND_POINT		4		//	200msec
 //-------------------------------------------------------------------------
 const unsigned char tSwTable[64] = {
 	
