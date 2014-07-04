@@ -487,18 +487,18 @@ void accessAda88( void )
 	}
 }
 //-------------------------------------------------------------------------
-void writeAda88( unsigned char cmd, unsigned char* bitPtn )
+void writeAda88( unsigned char* bitPtn )
 {
 	unsigned char buf[MATRIX_MAX+1];
 	int		i;
 	
-	buf[0] = cmd;									// Commands for performing a ranging
+	buf[0] = 0;									// Commands for performing a ranging
 	for ( i=0; i<MATRIX_MAX; i++ ){
 		buf[i*2+1] = *(bitPtn+i);
 		buf[i*2+2] = 0;
 	}
 	
-	if ((write(i2cDscript, buf, MATRIX_MAX+1)) != MATRIX_MAX+1) {	// Write commands to the i2c port
+	if ((write(i2cDscript, buf, MATRIX_MAX*2+1)) != MATRIX_MAX*2+1) {	// Write commands to the i2c port
 		printf("Error writing to i2c slave(LED)\n");
 		exit(1);
 	}
@@ -506,7 +506,7 @@ void writeAda88( unsigned char cmd, unsigned char* bitPtn )
 //-------------------------------------------------------------------------
 void initAda88( void )
 {
-	unsigned char bitPtn[MATRIX_MAX] = {0xaa,0x00,0xaa,0x01,0x55,0x10,0x55,0x80};
+	unsigned char bitPtn[MATRIX_MAX] = {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
 	unsigned char cmd;
 	
 	accessAda88();
@@ -527,7 +527,12 @@ void initAda88( void )
 		printf("Error writing to i2c slave(LED)\n");
 		exit(1);
 	}
-	writeAda88(0,bitPtn);
+
+	writeAda88(bitPtn);
+
+	bitPtn[] = {0x05,0x01,0x01,0x80,0xc0,0xd0,0x0f,0x05};
+	writeAda88(bitPtn);
+
 }
 //-------------------------------------------------------------------------
 void writePicture( unsigned char* bitPtn )
