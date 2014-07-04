@@ -506,7 +506,8 @@ void writeAda88( unsigned char* bitPtn )
 //-------------------------------------------------------------------------
 void initAda88( void )
 {
-	unsigned char bitPtn[MATRIX_MAX] = {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
+	unsigned char bitPtnClr[MATRIX_MAX] = {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
+	unsigned char bitPtn[MATRIX_MAX] = {0x05,0x01,0x01,0x80,0xc0,0xd0,0x0f,0x05};
 	unsigned char cmd;
 	
 	accessAda88();
@@ -528,9 +529,7 @@ void initAda88( void )
 		exit(1);
 	}
 
-	writeAda88(bitPtn);
-
-	bitPtn[MATRIX_MAX] = {0x05,0x01,0x01,0x80,0xc0,0xd0,0x0f,0x05};
+	writeAda88(bitPtnClr);
 	writeAda88(bitPtn);
 
 }
