@@ -531,11 +531,10 @@ void initAda88( void )
 
 	writeAda88(bitPtnClr);
 	writeAda88(bitPtn);
-
 }
 //-------------------------------------------------------------------------
 void writePicture( unsigned char* bitPtn )
 {
 	accessAda88();
-	writeAda88(0,bitPtn);
+	writeAda88(bitPtn);
 }
