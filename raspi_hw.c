@@ -489,7 +489,7 @@ void accessAda88( void )
 //-------------------------------------------------------------------------
 void writeAda88( unsigned char* bitPtn )
 {
-	unsigned char buf[MATRIX_MAX+1];
+	unsigned char buf[MATRIX_MAX*2+1];
 	int		i;
 	
 	buf[0] = 0;									// Commands for performing a ranging
