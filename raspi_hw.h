@@ -26,6 +26,12 @@ unsigned short getTchSwData( void );
 void initBlinkM( void );
 void changeColor( unsigned char* color );
 
+void accessAda88( void );
+void initAda88( void );
+void writePicture( unsigned char* bitPtn );
+
+
+
 void initADS1015( void );
 unsigned char getVolume( int number );
 

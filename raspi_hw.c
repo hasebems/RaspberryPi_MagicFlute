@@ -45,7 +45,7 @@ static unsigned char PRESSURE_SENSOR_ADDRESS = 0x5d;
 static unsigned char TOUCH_SENSOR_ADDRESS = 0x5a;
 static unsigned char LED_BLINKM_ADDRESS = 0x09;
 static unsigned char ADC_ADDRESS = 0x48;
-
+static unsigned char LED_ADA88_ADDRESS = 0x70;
 
 //-------------------------------------------------------------------------
 //			I2c Device Access Functions
@@ -346,51 +346,6 @@ unsigned short getTchSwData( void )
 	return (buf[1]<<8) | buf[0];
 }
 
-
-//-------------------------------------------------------------------------
-//			BlinkM ( Full Color LED : I2c Device)
-//-------------------------------------------------------------------------
-void accessBlinkM( void )
-{
-	int		address = LED_BLINKM_ADDRESS;  // I2C
-	
-	// Set Address
-	if (ioctl(i2cDscript, I2CSLAVE_, address) < 0){
-		printf("Unable to get bus access to talk to slave(LED)\n");
-		exit(1);
-	}
-}
-//-------------------------------------------------------------------------
-void writeBlinkM( unsigned char cmd, unsigned char* color )
-{
-	unsigned char buf[4];
-
-	buf[0] = cmd;									// Commands for performing a ranging
-	buf[1] = *color;
-	buf[2] = *(color+1);
-	buf[3] = *(color+2);
-	
-	if ((write(i2cDscript, buf, 4)) != 4) {			// Write commands to the i2c port
-		printf("Error writing to i2c slave(LED)\n");
-		exit(1);
-	}
-}
-//-------------------------------------------------------------------------
-void initBlinkM( void )
-{
-	unsigned char color[3] = {0x00,0xff,0x00};
-	accessBlinkM();
-	writeI2c('o', 0 );			//	stop script
-	writeBlinkM('n',color);
-}
-//-------------------------------------------------------------------------
-void changeColor( unsigned char* color )
-{
-	accessBlinkM();
-	writeBlinkM('c',color);
-}
-
-
 //-------------------------------------------------------------------------
 //			ADS1015 (ADC Sencer : I2c Device)
 //-------------------------------------------------------------------------
@@ -457,10 +412,96 @@ unsigned char getVolume( int number )
 	
 	accessADS1015();
 	ret = getValue();
-
+	
 	if ( number >= 2) setNext(0);
 	else setNext(number+1);
-
+	
 	return ret;
 }
 
+//-------------------------------------------------------------------------
+//			BlinkM ( Full Color LED : I2c Device)
+//-------------------------------------------------------------------------
+void accessBlinkM( void )
+{
+	int		address = LED_BLINKM_ADDRESS;  // I2C
+	
+	// Set Address
+	if (ioctl(i2cDscript, I2CSLAVE_, address) < 0){
+		printf("Unable to get bus access to talk to slave(LED)\n");
+		exit(1);
+	}
+}
+//-------------------------------------------------------------------------
+void writeBlinkM( unsigned char cmd, unsigned char* color )
+{
+	unsigned char buf[4];
+
+	buf[0] = cmd;									// Commands for performing a ranging
+	buf[1] = *color;
+	buf[2] = *(color+1);
+	buf[3] = *(color+2);
+	
+	if ((write(i2cDscript, buf, 4)) != 4) {			// Write commands to the i2c port
+		printf("Error writing to i2c slave(LED)\n");
+		exit(1);
+	}
+}
+//-------------------------------------------------------------------------
+void initBlinkM( void )
+{
+	unsigned char color[3] = {0x00,0xff,0x00};
+	accessBlinkM();
+	writeI2c('o', 0 );			//	stop script
+	writeBlinkM('n',color);
+}
+//-------------------------------------------------------------------------
+void changeColor( unsigned char* color )
+{
+	accessBlinkM();
+	writeBlinkM('c',color);
+}
+
+
+//-------------------------------------------------------------------------
+//			Adafruit88matrix ( 8*8 LED Matrix : I2c Device)
+//-------------------------------------------------------------------------
+void accessAda88( void )
+{
+	int		address = LED_ADA88_ADDRESS;  // I2C
+	
+	// Set Address
+	if (ioctl(i2cDscript, I2CSLAVE_, address) < 0){
+		printf("Unable to get bus access to talk to slave(LED Matrix)\n");
+		exit(1);
+	}
+}
+//-------------------------------------------------------------------------
+void writeAda88( unsigned char cmd, int ptnMax, unsigned char* bitPtn )
+{
+	unsigned char buf[ptnMax+1];
+	int		i;
+	
+	buf[0] = cmd;									// Commands for performing a ranging
+	for ( i=0; i<ptnMax; i++ ){
+		buf[i+1] = *(bitPtn+i);
+	}
+	
+	if ((write(i2cDscript, buf, ptnMax+1)) != ptnMax+1) {			// Write commands to the i2c port
+		printf("Error writing to i2c slave(LED)\n");
+		exit(1);
+	}
+}
+//-------------------------------------------------------------------------
+void initAda88( void )
+{
+	unsigned char bitPtn[8] = {0x00,0xff,0x00,0xff,0x00,0xff,0x00,0xff};
+	accessAda88();
+	writeAda88(0,8,bitPtn);
+}
+//-------------------------------------------------------------------------
+void writePicture( unsigned char* bitPtn )
+{
+	accessAda88();
+	writeAda88(0,8,bitPtn);
+}
