@@ -23,16 +23,14 @@ int getPressure( void );
 void initMPR121( void );
 unsigned short getTchSwData( void );
 
+void initADS1015( void );
+unsigned char getVolume( int number );
+
 void initBlinkM( void );
 void changeColor( unsigned char* color );
 
-void accessAda88( void );
 void initAda88( void );
-void writePicture( unsigned char* bitPtn );
-
-
-
-void initADS1015( void );
-unsigned char getVolume( int number );
+void writePattern( unsigned char* bitPtn );
+void writeMark( int type );
 
 #endif
