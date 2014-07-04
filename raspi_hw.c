@@ -466,6 +466,14 @@ void changeColor( unsigned char* color )
 //-------------------------------------------------------------------------
 //			Adafruit88matrix ( 8*8 LED Matrix : I2c Device)
 //-------------------------------------------------------------------------
+#define HT16K33_BLINK_CMD 0x80
+#define HT16K33_BLINK_DISPLAYON 0x01
+#define HT16K33_BLINK_OFF 0
+#define HT16K33_BLINK_2HZ  1
+#define HT16K33_BLINK_1HZ  2
+#define HT16K33_BLINK_HALFHZ  3
+#define HT16K33_CMD_BRIGHTNESS 0xE0
+//-------------------------------------------------------------------------
 void accessAda88( void )
 {
 	int		address = LED_ADA88_ADDRESS;  // I2C
@@ -497,7 +505,25 @@ void initAda88( void )
 {
 	unsigned char bitPtn[16] = {0xaa,0xaa,0xaa,0xaa,0x55,0x55,0x55,0x55,
 								0xff,0xff,0xff,0xff,0x00,0x00,0x00,0x00 };
+	unsigned char cmd = 0x21;
+	
 	accessAda88();
+	if ((write(i2cDscript, &cmd, 1)) != 1) {			// Write commands to the i2c port
+		printf("Error writing to i2c slave(LED)\n");
+		exit(1);
+	}
+
+	cmd = HT16K33_BLINK_CMD|HT16K33_BLINK_DISPLAYON|(HT16K33_BLINK_OFF<<1);
+	if ((write(i2cDscript, &cmd, 1)) != 1) {			// Write commands to the i2c port
+		printf("Error writing to i2c slave(LED)\n");
+		exit(1);
+	}
+
+	cmd = HT16K33_CMD_BRIGHTNESS | 0x0f;
+	if ((write(i2cDscript, &cmd, 1)) != 1) {			// Write commands to the i2c port
+		printf("Error writing to i2c slave(LED)\n");
+		exit(1);
+	}
 	writeAda88(0,16,bitPtn);
 }
 //-------------------------------------------------------------------------
