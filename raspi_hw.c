@@ -487,7 +487,7 @@ void writeAda88( unsigned char cmd, int ptnMax, unsigned char* bitPtn )
 		buf[i+1] = *(bitPtn+i);
 	}
 	
-	if ((write(i2cDscript, buf, ptnMax+1)) != ptnMax+1) {			// Write commands to the i2c port
+	if ((write(i2cDscript, buf, ptnMax+1)) != ptnMax+1) {	// Write commands to the i2c port
 		printf("Error writing to i2c slave(LED)\n");
 		exit(1);
 	}
@@ -495,13 +495,14 @@ void writeAda88( unsigned char cmd, int ptnMax, unsigned char* bitPtn )
 //-------------------------------------------------------------------------
 void initAda88( void )
 {
-	unsigned char bitPtn[8] = {0x00,0xff,0x00,0xff,0x00,0xff,0x00,0xff};
+	unsigned char bitPtn[16] = {0xaa,0xaa,0xaa,0xaa,0x55,0x55,0x55,0x55,
+								0xff,0xff,0xff,0xff,0x00,0x00,0x00,0x00 };
 	accessAda88();
-	writeAda88(0,8,bitPtn);
+	writeAda88(0,16,bitPtn);
 }
 //-------------------------------------------------------------------------
 void writePicture( unsigned char* bitPtn )
 {
 	accessAda88();
-	writeAda88(0,8,bitPtn);
+	writeAda88(0,16,bitPtn);
 }
