@@ -473,6 +473,8 @@ void changeColor( unsigned char* color )
 #define HT16K33_BLINK_1HZ  2
 #define HT16K33_BLINK_HALFHZ  3
 #define HT16K33_CMD_BRIGHTNESS 0xE0
+#define MATRIX_MAX	8
+
 //-------------------------------------------------------------------------
 void accessAda88( void )
 {
@@ -485,14 +487,15 @@ void accessAda88( void )
 	}
 }
 //-------------------------------------------------------------------------
-void writeAda88( unsigned char cmd, int ptnMax, unsigned char* bitPtn )
+void writeAda88( unsigned char cmd, unsigned char* bitPtn )
 {
-	unsigned char buf[ptnMax+1];
+	unsigned char buf[MATRIX_MAX+1];
 	int		i;
 	
 	buf[0] = cmd;									// Commands for performing a ranging
-	for ( i=0; i<ptnMax; i++ ){
-		buf[i+1] = *(bitPtn+i);
+	for ( i=0; i<MATRIX_MAX; i++ ){
+		buf[i*2+1] = *(bitPtn+i);
+		buf[i*2+2] = 0;
 	}
 	
 	if ((write(i2cDscript, buf, ptnMax+1)) != ptnMax+1) {	// Write commands to the i2c port
@@ -503,11 +506,11 @@ void writeAda88( unsigned char cmd, int ptnMax, unsigned char* bitPtn )
 //-------------------------------------------------------------------------
 void initAda88( void )
 {
-	unsigned char bitPtn[16] = {0xaa,0x00,0xaa,0x01,0x55,0x10,0x55,0x80,
-								0xff,0xff,0xff,0xff,0xff,0x00,0x00,0xff };
-	unsigned char cmd = 0x21;
+	unsigned char bitPtn[MATRIX_MAX] = {0xaa,0x00,0xaa,0x01,0x55,0x10,0x55,0x80};
+	unsigned char cmd;
 	
 	accessAda88();
+	cmd = 0x21;
 	if ((write(i2cDscript, &cmd, 1)) != 1) {			// Write commands to the i2c port
 		printf("Error writing to i2c slave(LED)\n");
 		exit(1);
@@ -524,11 +527,11 @@ void initAda88( void )
 		printf("Error writing to i2c slave(LED)\n");
 		exit(1);
 	}
-	writeAda88(0,16,bitPtn);
+	writeAda88(0,bitPtn);
 }
 //-------------------------------------------------------------------------
 void writePicture( unsigned char* bitPtn )
 {
 	accessAda88();
-	writeAda88(0,16,bitPtn);
+	writeAda88(0,bitPtn);
 }
