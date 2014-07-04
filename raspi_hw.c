@@ -498,7 +498,7 @@ void writeAda88( unsigned char cmd, unsigned char* bitPtn )
 		buf[i*2+2] = 0;
 	}
 	
-	if ((write(i2cDscript, buf, ptnMax+1)) != ptnMax+1) {	// Write commands to the i2c port
+	if ((write(i2cDscript, buf, MATRIX_MAX+1)) != MATRIX_MAX+1) {	// Write commands to the i2c port
 		printf("Error writing to i2c slave(LED)\n");
 		exit(1);
 	}
