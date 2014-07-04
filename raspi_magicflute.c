@@ -495,6 +495,7 @@ void initHw( void )
 	initBlinkM();
 	initAda88();
 	initADS1015();
+	writeMark(0);
 }
 //-------------------------------------------------------------------------
 //			Quit

@@ -507,7 +507,6 @@ void writeAda88( unsigned char* bitPtn )
 void initAda88( void )
 {
 	unsigned char bitPtnClr[MATRIX_MAX] = {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
-	unsigned char bitPtn[MATRIX_MAX] = {0x04,0x1f,0x04,0x1f,0x04,0x0f,0x15,0x22};
 	unsigned char cmd;
 	
 	accessAda88();
@@ -529,12 +528,20 @@ void initAda88( void )
 		exit(1);
 	}
 
-	writeAda88(bitPtnClr);
-	writeAda88(bitPtn);
+	writeAda88(bitPtnClr);		//	Clear All LEDs
 }
 //-------------------------------------------------------------------------
-void writePicture( unsigned char* bitPtn )
+void writePattern( unsigned char* bitPtn )
 {
 	accessAda88();
 	writeAda88(bitPtn);
+}
+//-------------------------------------------------------------------------
+void writeMark( int type )
+{
+	unsigned char bitPtn[2][MATRIX_MAX] = {
+		{0x04,0x1f,0x04,0x1f,0x04,0x0f,0x15,0x22},	//	MA
+		{0x04,0x1f,0x04,0x1f,0x04,0x0f,0x15,0x22}	//	MA
+	};
+	writePattern(bitPtn[type]);
 }
