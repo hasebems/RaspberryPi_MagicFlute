@@ -500,7 +500,7 @@ void writeAda88( unsigned char* bitPtn )
 	
 	if ((write(i2cDscript, buf, MATRIX_MAX*2+1)) != MATRIX_MAX*2+1) {	// Write commands to the i2c port
 		printf("Error writing to i2c slave(LED Matrix)\n");
-		exit(1);
+		//exit(1);
 	}
 }
 //-------------------------------------------------------------------------
