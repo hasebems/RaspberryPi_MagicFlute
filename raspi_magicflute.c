@@ -407,7 +407,7 @@ static void analyseVolume( void )
 				printf("Note Shift value: %d\n",partNoteShift);
 				int nsx = ns - 64;
 				if ( nsx < 0 ) nsx += 12; //	0 <= nsx <= 11
-				const int tCnv[12] = {3,11,4,13,5,6,15,7,9,1,10,2};
+				const int tCnv[12] = {3,12,4,13,5,6,15,7,9,1,10,2};
 				writeMark(tCnv[nsx]);
 			}
 			break;
