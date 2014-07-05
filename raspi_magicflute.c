@@ -405,6 +405,7 @@ static void analyseVolume( void )
 				unsigned char ns = ((int)partNoteShift-64)/10 + 64;
 				sendMessageToMsgf( 0xb0, 0x0c, ns );
 				printf("Note Shift value: %d\n",partNoteShift);
+				writeMark(ns&0x07);
 			}
 			break;
 		}
@@ -495,7 +496,6 @@ void initHw( void )
 	initBlinkM();
 	initAda88();
 	initADS1015();
-	writeMark(0);
 }
 //-------------------------------------------------------------------------
 //			Quit
