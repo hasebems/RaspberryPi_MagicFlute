@@ -406,8 +406,8 @@ static void analyseVolume( void )
 				sendMessageToMsgf( 0xb0, 0x0c, ns );
 				printf("Note Shift value: %d\n",partNoteShift);
 				int nsx = ns - 64;
-				if ( nsx < 0 ) nsx += 12; //	0 <= nsx <= -11
-				const int tCnv[12] = {3,11,4,13,5,6,15,7,16,8,17,9};
+				if ( nsx < 0 ) nsx += 12; //	0 <= nsx <= 11
+				const int tCnv[12] = {3,11,4,13,5,6,15,7,9,1,10,2};
 				writeMark(tCnv[nsx]);
 			}
 			break;
