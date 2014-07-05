@@ -405,7 +405,10 @@ static void analyseVolume( void )
 				unsigned char ns = ((int)partNoteShift-64)/10 + 64;
 				sendMessageToMsgf( 0xb0, 0x0c, ns );
 				printf("Note Shift value: %d\n",partNoteShift);
-				writeMark(ns&0x07);
+				int nsx = ns - 64;
+				if ( nsx < 0 ) nsx += 12; //	0 <= nsx <= -11
+				const int tCnv[12] = {3,11,4,13,5,6,15,7,16,8,17,9};
+				writeMark(tCnv[nsx]);
 			}
 			break;
 		}
