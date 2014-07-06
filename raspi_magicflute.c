@@ -480,6 +480,8 @@ void eventLoopInit( INIT_PRM* prm )
 	//	Time Measurement
 	gettimeofday(&tstr, NULL);
 	formerTime = tstr.tv_sec * 1000 + tstr.tv_usec/1000;
+
+	blinkLED(0);	//	Initialize to Do
 }
 //-------------------------------------------------------------------------
 void eventLoop( void )
