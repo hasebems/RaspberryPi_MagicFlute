@@ -453,7 +453,7 @@ void initBlinkM( void )
 	unsigned char color[3] = {0x00,0x00,0x00};
 	accessBlinkM();
 	writeI2c('o', 0 );			//	stop script
-	writeI2c('f', 128 );		//	fade time
+	writeI2c('f', 80 );			//	fade time
 	writeBlinkM('n',color);
 }
 //-------------------------------------------------------------------------
