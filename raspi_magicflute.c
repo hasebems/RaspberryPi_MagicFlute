@@ -238,17 +238,12 @@ static void judgeSendingMessage( long diffTime, unsigned short swdata )
 	}
 }
 //-------------------------------------------------------------------------
-static void analyseTouchSwitch( void )
+static void analyseTouchSwitch( long crntTime )
 {
-	struct	timeval tstr;
-	long	crntTime;
 	unsigned short	newSwData;
 
 	newSwData = getTchSwData();
 	if ( newSwData == 0xffff ) return;
-
-	gettimeofday(&tstr, NULL);
-	crntTime = tstr.tv_sec * 1000 + tstr.tv_usec/1000;
 		
 	if ( newSwData != lastSwData ){
 		if (((newSwData&OCT_SW) & ((~lastSwData)&OCT_SW)) ||
@@ -434,24 +429,6 @@ static void analyseVolume( void )
 	adCh++;
 	if ( adCh >= 3 ) adCh = 0;
 }
-		
-		
-//-------------------------------------------------------------------------
-//		event Loop
-//-------------------------------------------------------------------------
-void eventLoopInit( INIT_PRM* prm )
-{
-	sendMessageToMsgf( 0xb0, 0x0b, 0 );
-	noteShift = prm->transpose;
-}
-//-------------------------------------------------------------------------
-void eventLoop( void )
-{
-	analyseVolume();
-	analysePressure();
-	analyseTouchSwitch();
-}
-
 //-------------------------------------------------------------------------
 //			Initialize GPIO
 //-------------------------------------------------------------------------
@@ -482,6 +459,55 @@ static void initGPIO( void )
 	}
 }
 
+//-------------------------------------------------------------------------
+//		event Loop
+//-------------------------------------------------------------------------
+static long formerTime;
+static long timeSumming;
+static int	timerCount;
+#define		AVERAGE_TIMER_CNT		100
+//-------------------------------------------------------------------------
+void eventLoopInit( INIT_PRM* prm )
+{
+	struct	timeval tstr;
+	long	crntTime;
+	
+	sendMessageToMsgf( 0xb0, 0x0b, 0 );
+	noteShift = prm->transpose;
+	timerCount = 0;
+	timeSumming = 0;
+
+	//	Time Measurement
+	gettimeofday(&tstr, NULL);
+	formerTime = tstr.tv_sec * 1000 + tstr.tv_usec/1000;
+}
+//-------------------------------------------------------------------------
+void eventLoop( void )
+{
+	struct	timeval tstr;
+	long	crntTime, diff;
+
+	//	Time Measurement
+	gettimeofday(&tstr, NULL);
+	crntTime = tstr.tv_sec * 1000 + tstr.tv_usec/1000;
+
+	//	Main Job
+	analyseVolume();
+	analysePressure();
+	analyseTouchSwitch(crntTime);
+
+	//	Analyse Processing Time
+	diff = crntTime - formerTime;
+	timeSumming += diff;
+	formerTime = crntTime;
+	timerCount++;
+
+	if ( timerCount >= AVERAGE_TIMER_CNT ){
+		printf("Loop Interval value(100times): %l\n",timeSumming);
+		timeSumming = 0;
+		timerCount = 0;
+	}
+}
 //-------------------------------------------------------------------------
 //			Initialize
 //-------------------------------------------------------------------------
