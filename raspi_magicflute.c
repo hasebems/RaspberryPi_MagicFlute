@@ -23,6 +23,8 @@
 #include	"raspi_cwrap.h"
 #include	"raspi_hw.h"
 
+static unsigned char soundOn = 0;
+
 //-------------------------------------------------------------------------
 //		General Functions
 //-------------------------------------------------------------------------
@@ -36,8 +38,9 @@ void sendMessageToMsgf( unsigned char msg0, unsigned char msg1, unsigned char ms
 //-------------------------------------------------------------------------
 //		Blink LED
 //-------------------------------------------------------------------------
-#define		TURN_OFF_LED		12
-const unsigned char tNoteToColor[TURN_OFF_LED+1][3] = {
+#define		TURN_OFF_LED		0xff
+const unsigned char tNoteToColor[13][3] = {
+	//	R	  G		B
 	{ 0xff, 0x00, 0x00 },
 	{ 0xe0, 0x10, 0x00 },
 	{ 0xc0, 0x20, 0x00 },
@@ -55,9 +58,13 @@ const unsigned char tNoteToColor[TURN_OFF_LED+1][3] = {
 //-------------------------------------------------------------------------
 void blinkLED( unsigned char movableDo )
 {
-	changeColor((unsigned char*)tNoteToColor[movableDo%12]);
+	if ( movableDo == TURN_OFF_LED ){
+		changeColor((unsigned char*)tNoteToColor[12]);
+	}
+	else if ( soundOn ){
+		changeColor((unsigned char*)tNoteToColor[movableDo%12]);
+	}
 }
-
 
 //-------------------------------------------------------------------------
 //		Pressure Sencer Input
@@ -163,9 +170,12 @@ static void analysePressure( void )
 		
 		//	Generate Expression Event
 		if ( lastExp == 0 ){
+			soundOn = 0;
 			blinkLED( TURN_OFF_LED );
 		}
-		printf("  Expression:%d\n",lastExp);
+		else {
+			soundOn = 1;
+		}
 		sendMessageToMsgf( 0xb0, 0x0b, lastExp );
 	}
 }
@@ -468,6 +478,7 @@ void eventLoopInit( INIT_PRM* prm )
 	long	crntTime;
 	
 	sendMessageToMsgf( 0xb0, 0x0b, 0 );
+	soundOn = 0;
 	noteShift = prm->transpose;
 	timerCount = 0;
 	timeSumming = 0;
