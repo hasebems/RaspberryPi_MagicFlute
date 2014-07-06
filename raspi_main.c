@@ -29,8 +29,8 @@ static const char *device = "plughw:0,0";               /* playback device */
 static snd_pcm_format_t format = SND_PCM_FORMAT_S16;    /* sample format */
 static unsigned int samplingRate = 44100;               /* stream rate */
 static unsigned int channels = 1;                       /* count of channels */
-static unsigned int buffer_time = 60000;                /* ring buffer length in us */
-static unsigned int period_time = 15000;                /* period time in us */
+static unsigned int buffer_time = 80000;                /* ring buffer time [us] */
+static unsigned int period_time = 20000;                /* period time [us] */
 static double freq = 440;                /* sinusoidal wave frequency in Hz */
 static int verbose = 0;                  /* verbose flag */
 static int resample = 1;                 /* enable alsa-lib resampling */
@@ -575,8 +575,8 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 	
-	printf("Buffer Size is %d\n", buffer_size);
-	printf("Period Size is %d\n", period_size);
+	printf("Buffer Size is %d [sample]\n", buffer_size);
+	printf("Period Size is %d [sample]\n", period_size);
 
 	//	reserve memory
 	if (verbose > 0)
