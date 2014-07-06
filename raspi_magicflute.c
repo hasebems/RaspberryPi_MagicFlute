@@ -505,7 +505,7 @@ void eventLoop( void )
 	timerCount++;
 
 	if ( timerCount >= AVERAGE_TIMER_CNT ){
-		printf("Loop Interval value(100times): %l\n",timeSumming);
+		printf("Loop Interval value(100times): %d\n",timeSumming);
 		timeSumming = 0;
 		timerCount = 0;
 	}
