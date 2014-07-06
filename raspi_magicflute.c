@@ -165,6 +165,7 @@ static void analysePressure( void )
 		if ( lastExp == 0 ){
 			blinkLED( TURN_OFF_LED );
 		}
+		printf("  Expression:%d\n",lastExp);
 		sendMessageToMsgf( 0xb0, 0x0b, lastExp );
 	}
 }
