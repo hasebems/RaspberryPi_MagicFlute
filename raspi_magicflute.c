@@ -480,8 +480,6 @@ void eventLoopInit( INIT_PRM* prm )
 	//	Time Measurement
 	gettimeofday(&tstr, NULL);
 	formerTime = tstr.tv_sec * 1000 + tstr.tv_usec/1000;
-
-	blinkLED(0);	//	Initialize to Do
 }
 //-------------------------------------------------------------------------
 void eventLoop( void )
@@ -505,7 +503,7 @@ void eventLoop( void )
 	timerCount++;
 
 	if ( timerCount >= AVERAGE_TIMER_CNT ){
-		printf("Loop Interval value(100times): %d\n",timeSumming);
+		printf("---Loop Interval value(100times): %d [msec]\n",timeSumming);
 		timeSumming = 0;
 		timerCount = 0;
 	}
