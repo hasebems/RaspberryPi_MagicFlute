@@ -24,7 +24,7 @@
 #include	"raspi_hw.h"
 
 //-------------------------------------------------------------------------
-//		event Loop
+//		General Functions
 //-------------------------------------------------------------------------
 void sendMessageToMsgf( unsigned char msg0, unsigned char msg1, unsigned char msg2 )
 {
@@ -34,16 +34,34 @@ void sendMessageToMsgf( unsigned char msg0, unsigned char msg1, unsigned char ms
 	raspiaudio_Message( msg, 3 );
 }
 //-------------------------------------------------------------------------
-#if 0
-#define	MAX_EXP_WIDTH		40
-const unsigned char tExpValue[MAX_EXP_WIDTH] = {
-	0,0,0,0,0,24,38,48,56,62,
-	68,72,76,80,83,86,89,92,94,96,
-	98,100,102,104,106,107,109,110,112,113,
-	115,116,117,118,119,120,121,123,124,125
+//		Blink LED
+//-------------------------------------------------------------------------
+#define		TURN_OFF_LED		12
+const unsigned char tNoteToColor[TURN_OFF_LED+1][3] = {
+	{ 0xff, 0x00, 0x00 },
+	{ 0xe0, 0x10, 0x00 },
+	{ 0xc0, 0x20, 0x00 },
+	{ 0xa0, 0x30, 0x00 },
+	{ 0x80, 0x40, 0x00 },
+	{ 0x00, 0xff, 0x00 },
+	{ 0x00, 0x60, 0x60 },
+	{ 0x00, 0x00, 0xff },
+	{ 0x10, 0x00, 0xe0 },
+	{ 0x20, 0x00, 0xc0 },
+	{ 0x30, 0xff, 0xa0 },
+	{ 0x40, 0x00, 0x80 },
+	{ 0x00, 0x00, 0x00 }
 };
+//-------------------------------------------------------------------------
+void blinkLED( unsigned char movableDo )
+{
+	changeColor((unsigned char*)tNoteToColor[movableDo%12]);
+}
 
-#else
+
+//-------------------------------------------------------------------------
+//		Pressure Sencer Input
+//-------------------------------------------------------------------------
 #define	MAX_EXP_WIDTH		250
 const unsigned char tExpValue[MAX_EXP_WIDTH] = {
 	0,	0,	0,	0,	0,	0,	16,	25,	32,	37,
@@ -73,10 +91,6 @@ const unsigned char tExpValue[MAX_EXP_WIDTH] = {
 	125,	125,	125,	125,	125,	125,	125,	125,	126,	126,
 	126,	126,	126,	126,	126,	126,	126,	126,	127,	127
 };
-#endif
-
-//-------------------------------------------------------------------------
-//		Pressure Sencer Input
 //-------------------------------------------------------------------------
 static int startCount = 0;
 static int standardPrs = 0;	//	standard pressure value
@@ -148,31 +162,11 @@ static void analysePressure( void )
 		else lastExp--;
 		
 		//	Generate Expression Event
+		if ( lastExp == 0 ){
+			blinkLED( TURN_OFF_LED );
+		}
 		sendMessageToMsgf( 0xb0, 0x0b, lastExp );
 	}
-}
-
-//-------------------------------------------------------------------------
-//		Blink LED
-//-------------------------------------------------------------------------
-const unsigned char tNoteToColor[12][3] = {
-	{ 0xff, 0x00, 0x00 },
-	{ 0xe0, 0x10, 0x00 },
-	{ 0xc0, 0x20, 0x00 },
-	{ 0xa0, 0x30, 0x00 },
-	{ 0x80, 0x40, 0x00 },
-	{ 0x00, 0xff, 0x00 },
-	{ 0x00, 0x60, 0x60 },
-	{ 0x00, 0x00, 0xff },
-	{ 0x10, 0x00, 0xe0 },
-	{ 0x20, 0x00, 0xc0 },
-	{ 0x30, 0xff, 0xa0 },
-	{ 0x40, 0x00, 0x80 }
-};
-//-------------------------------------------------------------------------
-void blinkLED( unsigned char movableDo )
-{
-	changeColor((unsigned char*)tNoteToColor[movableDo%12]);
 }
 
 //-------------------------------------------------------------------------
