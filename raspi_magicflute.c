@@ -26,7 +26,7 @@
 static unsigned char soundOn = 0;
 
 //-------------------------------------------------------------------------
-//		General Functions
+//		Send Message
 //-------------------------------------------------------------------------
 void sendMessageToMsgf( unsigned char msg0, unsigned char msg1, unsigned char msg2 )
 {
@@ -115,7 +115,7 @@ static int stockPrs = 0;
 #define		STABLE_COUNT		30
 #define		NOISE_WIDTH			1
 //-------------------------------------------------------------------------
-static int ExcludeAtmospheric( int value )
+static int excludeAtmospheric( int value )
 {
 	int tmpVal;
 	
@@ -161,7 +161,7 @@ static void analysePressure( void )
 	int tempPrs = getPressure();
 
 	if ( tempPrs != 0 ){
-		int idt = ExcludeAtmospheric( tempPrs );
+		int idt = excludeAtmospheric( tempPrs );
 		if ( currentPressure != idt ){
 			//	protect trembling
 			printf("Pressure:%d\n",idt);
@@ -312,54 +312,6 @@ static void analyseTouchSwitch( long crntTime )
 
 	judgeSendingMessage( crntTime-startTime, newSwData );
 }
-
-//-------------------------------------------------------------------------
-//		GPIO Input
-//-------------------------------------------------------------------------
-#define			MAX_SW_NUM			3
-static int		swOld[MAX_SW_NUM] = {1,1,1};
-//-------------------------------------------------------------------------
-static void analyseGPIO( void )
-{
-	unsigned char note, vel;
-	int 	i;
-	char	gpioPath[64];
-	int		fd_in[MAX_SW_NUM], swNew[MAX_SW_NUM];
-	
-	for (i=0; i<MAX_SW_NUM; i++){
-		sprintf(gpioPath,"/sys/class/gpio/gpio%d/value",i+9);
-		fd_in[i] = open(gpioPath,O_RDWR);
-		if ( fd_in[i] < 0 ) exit(EXIT_FAILURE);
-	}
-
-	for (i=0; i<MAX_SW_NUM; i++){
-		char value[2];
-		read(fd_in[i], value, 2);
-		if ( value[0] == '0' ) swNew[i] = 0;
-		else swNew[i] = 1;
-	}
-
-	for (i=0; i<MAX_SW_NUM; i++){
-		close(fd_in[i]);
-	}
-		
-	for (i=0; i<MAX_SW_NUM; i++ ){
-		if ( swNew[i] != swOld[i] ){
-			if ( !swNew[i] ){
-				note = 0x3c + 2*i; vel = 0x7f;
-				printf("Now KeyOn of %d\n",i);
-			}
-			else {
-				note = 0x3c + 2*i; vel = 0;
-				printf("Now KeyOff of %d\n",i);
-			}
-			//	Call MSGF
-			sendMessageToMsgf( 0x90, note, vel );
-			swOld[i] = swNew[i];
-		}
-	}
-}
-
 //-------------------------------------------------------------------------
 //		Keyboard Input
 //-------------------------------------------------------------------------
@@ -447,7 +399,51 @@ static void analyseVolume( void )
 	if ( adCh >= 3 ) adCh = 0;
 }
 //-------------------------------------------------------------------------
-//			Initialize GPIO
+//		GPIO Input
+//-------------------------------------------------------------------------
+#define			MAX_SW_NUM			3
+static int		swOld[MAX_SW_NUM] = {1,1,1};
+//-------------------------------------------------------------------------
+static void analyseGPIO( void )
+{
+	unsigned char note, vel;
+	int 	i;
+	char	gpioPath[64];
+	int		fd_in[MAX_SW_NUM], swNew[MAX_SW_NUM];
+	
+	for (i=0; i<MAX_SW_NUM; i++){
+		sprintf(gpioPath,"/sys/class/gpio/gpio%d/value",i+9);
+		fd_in[i] = open(gpioPath,O_RDWR);
+		if ( fd_in[i] < 0 ) exit(EXIT_FAILURE);
+	}
+	
+	for (i=0; i<MAX_SW_NUM; i++){
+		char value[2];
+		read(fd_in[i], value, 2);
+		if ( value[0] == '0' ) swNew[i] = 0;
+		else swNew[i] = 1;
+	}
+	
+	for (i=0; i<MAX_SW_NUM; i++){
+		close(fd_in[i]);
+	}
+	
+	for (i=0; i<MAX_SW_NUM; i++ ){
+		if ( swNew[i] != swOld[i] ){
+			if ( !swNew[i] ){
+				note = 0x3c + 2*i; vel = 0x7f;
+				printf("Now KeyOn of %d\n",i);
+			}
+			else {
+				note = 0x3c + 2*i; vel = 0;
+				printf("Now KeyOff of %d\n",i);
+			}
+			//	Call MSGF
+			sendMessageToMsgf( 0x90, note, vel );
+			swOld[i] = swNew[i];
+		}
+	}
+}
 //-------------------------------------------------------------------------
 static void initGPIO( void )
 {
@@ -482,7 +478,7 @@ static void initGPIO( void )
 static long formerTime;
 static long timeSumming;
 static int	timerCount;
-#define		AVERAGE_TIMER_CNT		100
+#define		AVERAGE_TIMER_CNT		100		//	This times
 //-------------------------------------------------------------------------
 void eventLoopInit( INIT_PRM* prm )
 {
@@ -509,7 +505,7 @@ void eventLoop( void )
 	gettimeofday(&tstr, NULL);
 	crntTime = tstr.tv_sec * 1000 + tstr.tv_usec/1000;
 
-	//	Main Job
+	//	Main Task
 	analyseVolume();
 	analysePressure();
 	analyseTouchSwitch(crntTime);
@@ -531,6 +527,7 @@ void eventLoop( void )
 //-------------------------------------------------------------------------
 void initHw( void )
 {
+	//--------------------------------------------------------
 	//	Initialize GPIO
 	initGPIO();
 	
