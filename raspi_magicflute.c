@@ -38,7 +38,7 @@ void sendMessageToMsgf( unsigned char msg0, unsigned char msg1, unsigned char ms
 //-------------------------------------------------------------------------
 //		Blink LED
 //-------------------------------------------------------------------------
-static unsigned char oldMovableDo = 0;
+static unsigned char movableDo = 0;
 #define		TURN_OFF_LED		0xff
 #define		TURN_ON_LED			0xfe
 const unsigned char tNoteToColor[13][3] = {
@@ -58,17 +58,19 @@ const unsigned char tNoteToColor[13][3] = {
 	{ 0x00, 0x00, 0x00 }
 };
 //-------------------------------------------------------------------------
-void blinkLED( unsigned char movableDo )
+void blinkLED( unsigned char mvDo )
 {
-	if ( movableDo == TURN_OFF_LED ){
+	if ( mvDo == TURN_OFF_LED ){
 		changeColor((unsigned char*)tNoteToColor[12]);
 	}
-	else if ( movableDo == TURN_ON_LED ){
-		changeColor((unsigned char*)tNoteToColor[oldMovableDo]);
+	else if ( mvDo == TURN_ON_LED ){
+		changeColor((unsigned char*)tNoteToColor[movableDo]);
 	}
-	else if ( soundOn ){
-		oldMovableDo = movableDo%12;
-		changeColor((unsigned char*)tNoteToColor[oldMovableDo]);
+	else {
+		movableDo = mvDo%12;
+		if ( soundOn ){
+			changeColor((unsigned char*)tNoteToColor[movableDo]);
+		}
 	}
 }
 
