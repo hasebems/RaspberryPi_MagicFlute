@@ -38,7 +38,9 @@ void sendMessageToMsgf( unsigned char msg0, unsigned char msg1, unsigned char ms
 //-------------------------------------------------------------------------
 //		Blink LED
 //-------------------------------------------------------------------------
+static unsigned char oldMovableDo = 0;
 #define		TURN_OFF_LED		0xff
+#define		TURN_ON_LED			0xfe
 const unsigned char tNoteToColor[13][3] = {
 	//	R	  G		B
 	{ 0xff, 0x00, 0x00 },
@@ -61,8 +63,12 @@ void blinkLED( unsigned char movableDo )
 	if ( movableDo == TURN_OFF_LED ){
 		changeColor((unsigned char*)tNoteToColor[12]);
 	}
+	else if ( movableDo == TURN_ON_LED ){
+		changeColor((unsigned char*)tNoteToColor[oldMovableDo]);
+	}
 	else if ( soundOn ){
-		changeColor((unsigned char*)tNoteToColor[movableDo%12]);
+		oldMovableDo = movableDo%12;
+		changeColor((unsigned char*)tNoteToColor[oldMovableDo]);
 	}
 }
 
@@ -165,17 +171,21 @@ static void analysePressure( void )
 	}
 
 	if ( currentExp != lastExp ){
+		//	Generate Expression Event
 		if ( currentExp > lastExp ) lastExp++;
 		else lastExp--;
 		
-		//	Generate Expression Event
+		//	controll LED
 		if ( lastExp == 0 ){
 			soundOn = 0;
 			blinkLED( TURN_OFF_LED );
 		}
-		else {
+		else if ( soundOn == 0 ){
+			blinkLED( TURN_ON_LED );
 			soundOn = 1;
 		}
+		
+		//	Send Message
 		sendMessageToMsgf( 0xb0, 0x0b, lastExp );
 	}
 }
