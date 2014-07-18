@@ -26,6 +26,9 @@ unsigned short getTchSwData( void );
 void initADS1015( void );
 unsigned char getVolume( int number );
 
+void initADXL345( void );
+void getAccel( unsigned short* value );
+
 void initBlinkM( void );
 void changeColor( unsigned char* color );
 
