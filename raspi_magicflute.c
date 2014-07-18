@@ -471,6 +471,18 @@ static void initGPIO( void )
 		close(fd_dir);
 	}
 }
+//-------------------------------------------------------------------------
+//		Volume Input
+//-------------------------------------------------------------------------
+//static int adCh = 0;
+//-------------------------------------------------------------------------
+static void analyseAcceleration( void )
+{
+	unsigned char accel[3];
+	
+	getAccel( accel );
+	printf("xxxxxxxxxxx X:%04x Y:%04x Z:%04x\n",*accel,*(accel+1),*(accel+2));
+}
 
 //-------------------------------------------------------------------------
 //		event Loop
@@ -509,6 +521,7 @@ void eventLoop( void )
 	analyseVolume();
 	analysePressure();
 	analyseTouchSwitch(crntTime);
+	analyseAcceleration();
 
 	//	Analyse Processing Time
 	diff = crntTime - formerTime;
@@ -540,6 +553,7 @@ void initHw( void )
 	initBlinkM();
 	initAda88();
 	initADS1015();
+	initADXL345();
 }
 //-------------------------------------------------------------------------
 //			Quit

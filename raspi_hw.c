@@ -46,6 +46,8 @@ static unsigned char TOUCH_SENSOR_ADDRESS = 0x5a;
 static unsigned char LED_BLINKM_ADDRESS = 0x09;
 static unsigned char ADC_ADDRESS = 0x48;
 static unsigned char LED_ADA88_ADDRESS = 0x70;
+static unsigned char ACCEL_SENSOR_ADDRESS = 0x1d;
+
 
 //-------------------------------------------------------------------------
 //			I2c Device Access Functions
@@ -418,6 +420,49 @@ unsigned char getVolume( int number )
 	
 	return ret;
 }
+
+
+//-------------------------------------------------------------------------
+//			ADXL345 (Acceleration Sencer : I2c Device)
+//-------------------------------------------------------------------------
+//	for Acceleration Sencer
+
+//-------------------------------------------------------------------------
+void accessADXL345( void )
+{
+	int		address = ACCEL_SENSOR_ADDRESS;  // I2C
+	
+	// Set Address
+	if (ioctl(i2cDscript, I2CSLAVE_, address) < 0){
+		printf("Unable to get bus access to talk to slave(ACCEL)\n");
+		exit(1);
+	}
+}
+//-------------------------------------------------------------------------
+void initADXL345( void )
+{
+	//	Start Access
+	accessADXL345();
+}
+//-------------------------------------------------------------------------
+void getAccel( unsigned short* value )
+{
+	unsigned short tmp;
+	
+	accessADXL345();
+	tmp = readI2c(0x32);
+	tmp |= readI2c(0x33) << 8;
+	*value = tmp;
+
+	tmp = readI2c(0x34);
+	tmp |= readI2c(0x35) << 8;
+	*(value+1) = tmp;
+
+	tmp = readI2c(0x36);
+	tmp |= readI2c(0x37) << 8;
+	*(value+2) = tmp;
+}
+
 
 //-------------------------------------------------------------------------
 //			BlinkM ( Full Color LED : I2c Device)
