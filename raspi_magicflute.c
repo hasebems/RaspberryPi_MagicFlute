@@ -485,26 +485,26 @@ static void analyseAcceleration( void )
 
 	getAccel( accel );
 
-	tmp = (*accel)>>10;
+	tmp = (*accel)>>6;
 	if ( tmp != xaxis ){
 		xaxis = tmp;
 		flg = true;
 	}
 
-	tmp = (*(accel+1))>>10;
+	tmp = (*(accel+1))>>6;
 	if ( tmp != yaxis ){
 		yaxis = tmp;
 		flg = true;
 	}
 
-	tmp = (*(accel+2))>>10;
+	tmp = (*(accel+2))>>6;
 	if ( tmp != zaxis ){
 		zaxis = tmp;
 		flg = true;
 	}
 	
 	if ( flg == true ){
-		printf("  xxxxxxx X:%d Y:%d Z:%d\n",xaxis,yaxis,zaxis);
+		printf("  xxxxxxx X:%04d Y:%04d Z:%04d\n",xaxis,yaxis,zaxis);
 	}
 }
 
