@@ -580,7 +580,7 @@ void initHw( void )
 	initBlinkM();
 	initAda88();
 	initADS1015();
-	initADXL345();
+//	initADXL345();
 }
 //-------------------------------------------------------------------------
 //			Quit
