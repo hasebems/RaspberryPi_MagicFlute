@@ -548,7 +548,7 @@ void eventLoop( void )
 	analyseVolume();
 	analysePressure();
 	analyseTouchSwitch(crntTime);
-//	analyseAcceleration();
+	analyseAcceleration();
 
 	//	Analyse Processing Time
 	diff = crntTime - formerTime;
@@ -580,7 +580,7 @@ void initHw( void )
 	initBlinkM();
 	initAda88();
 	initADS1015();
-//	initADXL345();
+	initADXL345();
 }
 //-------------------------------------------------------------------------
 //			Quit
