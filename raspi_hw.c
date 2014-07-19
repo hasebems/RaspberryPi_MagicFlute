@@ -455,15 +455,15 @@ void getAccel( signed short* value )
 	accessADXL345();
 	tmp = readI2c(0x32);
 	tmp |= readI2c(0x33) << 8;
-	*value = (singed short)tmp;
+	*value = (signed short)tmp;
 
 	tmp = readI2c(0x34);
 	tmp |= readI2c(0x35) << 8;
-	*(value+1) = (singed short)tmp;
+	*(value+1) = (signed short)tmp;
 
 	tmp = readI2c(0x36);
 	tmp |= readI2c(0x37) << 8;
-	*(value+2) = (singed short)tmp;
+	*(value+2) = (signed short)tmp;
 }
 
 
