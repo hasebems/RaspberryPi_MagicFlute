@@ -472,11 +472,19 @@ static void initGPIO( void )
 	}
 }
 //-------------------------------------------------------------------------
-//		Volume Input
+//		Inclination Input
 //-------------------------------------------------------------------------
+#define		MAX_ANGLE_BIT		5	//	0x01 << MAX_ANGLE_BIT
 static int xaxis = 0;
 static int yaxis = 0;
 static int zaxis = 0;
+//static int lastInclination = 0;		//	0:horizontal - plus value:the end goes down
+//-------------------------------------------------------------------------
+static void calcInclination( void )
+{
+	sendMessageToMsgf( 0xb0, 0x01, xaxis );
+	printf("Modulation value: %d\n",xaxis);
+}
 //-------------------------------------------------------------------------
 static void analyseAcceleration( void )
 {
@@ -485,29 +493,29 @@ static void analyseAcceleration( void )
 
 	getAccel( accel );
 
-	tmp = (*accel)>>12;
+	tmp = (*accel)>>(16-MAX_ANGLE_BIT);
 	if ( tmp != xaxis ){
 		if ( tmp > xaxis ) xaxis++;
 		else xaxis--;
 		flg = true;
 	}
 
-	tmp = (*(accel+1))>>12;
-	if ( tmp != yaxis ){
-		if ( tmp > yaxis ) yaxis++;
-		else yaxis--;
-		flg = true;
-	}
+//	tmp = (*(accel+1))>>(16-MAX_ANGLE_BIT);
+//	if ( tmp != yaxis ){
+//		if ( tmp > yaxis ) yaxis++;
+//		else yaxis--;
+//		flg = true;
+//	}
 
-	tmp = (*(accel+2))>>12;
-	if ( tmp != zaxis ){
-		if ( tmp > zaxis ) zaxis++;
-		else zaxis--;
-		flg = true;
-	}
+//	tmp = (*(accel+2))>>(16-MAX_ANGLE_BIT);
+//	if ( tmp != zaxis ){
+//		if ( tmp > zaxis ) zaxis++;
+//		else zaxis--;
+//		flg = true;
+//	}
 	
 	if ( flg == true ){
-		printf("  xxxxxxx X:%02d Y:%02d Z:%02d\n",xaxis,yaxis,zaxis);
+		calcInclination();
 	}
 }
 
