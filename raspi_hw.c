@@ -448,22 +448,22 @@ void initADXL345( void )
 	writeI2c(ACCEL_SNCR_DATA_FORMAT,0x04);		//	Left Justified
 }
 //-------------------------------------------------------------------------
-void getAccel( unsigned short* value )
+void getAccel( signed short* value )
 {
 	unsigned short tmp;
 	
 	accessADXL345();
 	tmp = readI2c(0x32);
 	tmp |= readI2c(0x33) << 8;
-	*value = tmp;
+	*value = (singed short)tmp;
 
 	tmp = readI2c(0x34);
 	tmp |= readI2c(0x35) << 8;
-	*(value+1) = tmp;
+	*(value+1) = (singed short)tmp;
 
 	tmp = readI2c(0x36);
 	tmp |= readI2c(0x37) << 8;
-	*(value+2) = tmp;
+	*(value+2) = (singed short)tmp;
 }
 
 

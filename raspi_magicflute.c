@@ -480,7 +480,7 @@ static int zaxis = 0;
 //-------------------------------------------------------------------------
 static void analyseAcceleration( void )
 {
-	unsigned short accel[3], tmp;
+	signed short accel[3], tmp;
 	bool flg = false;
 
 	getAccel( accel );
