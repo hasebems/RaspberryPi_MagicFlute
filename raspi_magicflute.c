@@ -548,7 +548,7 @@ void eventLoop( void )
 	analyseVolume();
 	analysePressure();
 	analyseTouchSwitch(crntTime);
-	analyseAcceleration();
+//	analyseAcceleration();
 
 	//	Analyse Processing Time
 	diff = crntTime - formerTime;
