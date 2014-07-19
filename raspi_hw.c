@@ -444,8 +444,8 @@ void initADXL345( void )
 {
 	//	Start Access
 	accessADXL345();
-	writeI2c(ACCEL_SNCR_PWR_CTRL,0x08);		//	Start Measurement
-	writeI2c(ACCEL_SNCR_PWR_CTRL,0x04);		//	Left Justified
+	writeI2c(ACCEL_SNCR_PWR_CTRL,0x08);			//	Start Measurement
+	writeI2c(ACCEL_SNCR_DATA_FORMAT,0x04);		//	Left Justified
 }
 //-------------------------------------------------------------------------
 void getAccel( unsigned short* value )
