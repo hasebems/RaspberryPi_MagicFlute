@@ -485,21 +485,21 @@ static void analyseAcceleration( void )
 
 	getAccel( accel );
 
-	tmp = (*accel)>>10;
+	tmp = (*accel)>>12;
 	if ( tmp != xaxis ){
 		if ( tmp > xaxis ) xaxis++;
 		else xaxis--;
 		flg = true;
 	}
 
-	tmp = (*(accel+1))>>10;
+	tmp = (*(accel+1))>>12;
 	if ( tmp != yaxis ){
 		if ( tmp > yaxis ) yaxis++;
 		else yaxis--;
 		flg = true;
 	}
 
-	tmp = (*(accel+2))>>10;
+	tmp = (*(accel+2))>>12;
 	if ( tmp != zaxis ){
 		if ( tmp > zaxis ) zaxis++;
 		else zaxis--;
