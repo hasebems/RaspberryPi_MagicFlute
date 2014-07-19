@@ -503,9 +503,9 @@ static void analyseAcceleration( void )
 		flg = true;
 	}
 	
-//	if ( flg == true ){
+	if ( flg == true ){
 		printf("  xxxxxxx X:%d Y:%d Z:%d\n",xaxis,yaxis,zaxis);
-//	}
+	}
 }
 
 //-------------------------------------------------------------------------
