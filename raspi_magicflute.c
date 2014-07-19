@@ -474,15 +474,16 @@ static void initGPIO( void )
 //-------------------------------------------------------------------------
 //		Inclination Input
 //-------------------------------------------------------------------------
-#define		MAX_ANGLE_BIT		6	//	0x01 << MAX_ANGLE_BIT
-static int xaxis = 0;
-static int yaxis = 0;
+#define		MAX_ANGLE_BIT		6		//	Range: 0x01 << MAX_ANGLE_BIT
+static int xaxis = 0;					//	0 means horizontal
+static int yaxis = 0;					//	0 means horizontal
 static int zaxis = 0;
-//static int lastInclination = 0;		//	0:horizontal - plus value:the end goes down
 //-------------------------------------------------------------------------
 static void calcInclination( void )
 {
-	sendMessageToMsgf( 0xb0, 0x01, xaxis );
+	if (( xaxis >= 0 ) && ( xaxis < 128 )){
+		sendMessageToMsgf( 0xb0, 0x01, xaxis );
+	}
 	printf("  Incli. Modulation value: %d\n",xaxis);
 }
 //-------------------------------------------------------------------------
@@ -493,21 +494,21 @@ static void analyseAcceleration( void )
 
 	getAccel( accel );
 
-	tmp = (*accel)/(0x0001<<(16-MAX_ANGLE_BIT));
+	tmp = (*accel)/(0x0001<<(15-MAX_ANGLE_BIT));
 	if ( tmp != xaxis ){
 		if ( tmp > xaxis ) xaxis++;
 		else xaxis--;
 		flg = true;
 	}
 
-//	tmp = (*(accel+1))/(0x0001<<(16-MAX_ANGLE_BIT));
+//	tmp = (*(accel+1))/(0x0001<<(15-MAX_ANGLE_BIT));
 //	if ( tmp != yaxis ){
 //		if ( tmp > yaxis ) yaxis++;
 //		else yaxis--;
 //		flg = true;
 //	}
 
-//	tmp = (*(accel+2))/(0x0001<<(16-MAX_ANGLE_BIT));
+//	tmp = (*(accel+2))/(0x0001<<(15-MAX_ANGLE_BIT));
 //	if ( tmp != zaxis ){
 //		if ( tmp > zaxis ) zaxis++;
 //		else zaxis--;
