@@ -474,14 +474,38 @@ static void initGPIO( void )
 //-------------------------------------------------------------------------
 //		Volume Input
 //-------------------------------------------------------------------------
-//static int adCh = 0;
+static int xaxis = 0;
+static int yaxis = 0;
+static int zaxis = 0;
 //-------------------------------------------------------------------------
 static void analyseAcceleration( void )
 {
-	unsigned char accel[3];
-	
+	unsigned short accel[3], tmp;
+	bool flg = false;
+
 	getAccel( accel );
-	printf("xxxxxxxxxxx X:%04x Y:%04x Z:%04x\n",*accel,*(accel+1),*(accel+2));
+
+	tmp = (*accel)>>10;
+	if ( tmp != xaxis ){
+		xaxis = tmp;
+		flg = true;
+	}
+
+	tmp = (*(accel+1))>>10;
+	if ( tmp != yaxis ){
+		yaxis = tmp;
+		flg = true;
+	}
+
+	tmp = (*(accel+2))>>10;
+	if ( tmp != zaxis ){
+		zaxis = tmp;
+		flg = true;
+	}
+	
+	if ( flg == true ){
+		printf("  xxxxxxx X:%d Y:%d Z:%d\n",xaxis,yaxis,zaxis);
+	}
 }
 
 //-------------------------------------------------------------------------
