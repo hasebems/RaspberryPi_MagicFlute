@@ -164,7 +164,7 @@ static void analysePressure( void )
 		int idt = excludeAtmospheric( tempPrs );
 		if ( currentPressure != idt ){
 			//	protect trembling
-			printf("Pressure:%d\n",idt);
+			printf("Air Pres.:%d\n",idt);
 			currentPressure = idt;
 			if ( idt < 0 ) idt = 0;
 			else if ( idt >= MAX_EXP_WIDTH ) idt = MAX_EXP_WIDTH-1;
@@ -483,7 +483,7 @@ static int zaxis = 0;
 static void calcInclination( void )
 {
 	sendMessageToMsgf( 0xb0, 0x01, xaxis );
-	printf("Modulation value: %d\n",xaxis);
+	printf("  Incli. Modulation value: %d\n",xaxis);
 }
 //-------------------------------------------------------------------------
 static void analyseAcceleration( void )
@@ -493,21 +493,21 @@ static void analyseAcceleration( void )
 
 	getAccel( accel );
 
-	tmp = (*accel)>>(16-MAX_ANGLE_BIT);
+	tmp = (*accel)/(0x0001<<(16-MAX_ANGLE_BIT));
 	if ( tmp != xaxis ){
 		if ( tmp > xaxis ) xaxis++;
 		else xaxis--;
 		flg = true;
 	}
 
-//	tmp = (*(accel+1))>>(16-MAX_ANGLE_BIT);
+//	tmp = (*(accel+1))/(0x0001<<(16-MAX_ANGLE_BIT));
 //	if ( tmp != yaxis ){
 //		if ( tmp > yaxis ) yaxis++;
 //		else yaxis--;
 //		flg = true;
 //	}
 
-//	tmp = (*(accel+2))>>(16-MAX_ANGLE_BIT);
+//	tmp = (*(accel+2))/(0x0001<<(16-MAX_ANGLE_BIT));
 //	if ( tmp != zaxis ){
 //		if ( tmp > zaxis ) zaxis++;
 //		else zaxis--;
