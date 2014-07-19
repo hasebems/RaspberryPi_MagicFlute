@@ -474,7 +474,7 @@ static void initGPIO( void )
 //-------------------------------------------------------------------------
 //		Inclination Input
 //-------------------------------------------------------------------------
-#define		MAX_ANGLE_BIT		5	//	0x01 << MAX_ANGLE_BIT
+#define		MAX_ANGLE_BIT		6	//	0x01 << MAX_ANGLE_BIT
 static int xaxis = 0;
 static int yaxis = 0;
 static int zaxis = 0;
