@@ -474,10 +474,19 @@ static void initGPIO( void )
 //-------------------------------------------------------------------------
 //		Inclination Input
 //-------------------------------------------------------------------------
-#define		MAX_ANGLE_BIT		6		//	Range: 0x01 << MAX_ANGLE_BIT
+#define		MAX_ANGLE_BIT		6		//
+#define		MAX_ANGLE			32		//	0x01 << MAX_ANGLE_BIT
 static int xaxis = 0;					//	0 means horizontal
 static int yaxis = 0;					//	0 means horizontal
 static int zaxis = 0;
+static int modDpt = 0;
+//-------------------------------------------------------------------------
+const int tCnvModDpt[MAX_ANGLE] = {
+	0,	0,	0,	0,	0,	0,	0,	0,
+	0,	0,	0,	0,	1,	1,	2,	2,
+	3,	4,	5,	6,	7,	8,	9,	10,
+	12,	14,	16,	19,	22,	25,	28,	31,
+};
 //-------------------------------------------------------------------------
 static void calcInclination( void )
 {
@@ -493,11 +502,15 @@ static void analyseAcceleration( void )
 	bool flg = false;
 
 	getAccel( accel );
+	xaxis = accel[0];
+	yaxis = accel[1];
+	zaxis = accel[2];
 
-	tmp = (*accel)/(0x0001<<(15-MAX_ANGLE_BIT));
-	if ( tmp != xaxis ){
-		if ( tmp > xaxis ) xaxis++;
-		else xaxis--;
+	tmp = xaxis/(0x0001<<(15-MAX_ANGLE_BIT));
+	tmp = tCnvModDpt[tmp];
+	if ( tmp != modDpt ){
+		if ( tmp > modDpt ) modDpt++;
+		else modDpt--;
 		flg = true;
 	}
 
