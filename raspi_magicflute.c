@@ -512,6 +512,7 @@ static void analyseAcceleration( void )
 	tmp >>= 2;
 	if ( tmp >= MAX_ANGLE ) tmp = MAX_ANGLE-1;
 	tmp = tCnvModDpt[tmp];
+
 	if ( tmp > modDpt ){
 		modDpt++;
 		flg = true;
