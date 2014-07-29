@@ -507,8 +507,8 @@ static void analyseAcceleration( void )
 	zaxis = accel[2];
 
 	tmp = xaxis/256;			// make xaxis 8bit
-	tmp = tmp*MAX_ANGLE/128;	// make xaxis MAX_ANGLE_BIT bit
-	tmp &= (MAX_ANGLE-1);		// limit >31
+	tmp = (tmp*MAX_ANGLE)/256;	// make xaxis MAX_ANGLE_BIT bit
+	if ( tmp >= MAX_ANGLE ) tmp = MAX_ANGLE-1;
 	tmp = tCnvModDpt[tmp];
 	if ( tmp > modDpt ){
 		modDpt++;
