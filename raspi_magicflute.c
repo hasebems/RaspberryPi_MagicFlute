@@ -494,7 +494,6 @@ static void calcInclination( void )
 		sendMessageToMsgf( 0xb0, 0x01, modDpt );
 	}
 	printf("  Incli. Modulation value: %d\n",modDpt);
-	printf("  XXX: %d\n",xaxis);
 }
 //-------------------------------------------------------------------------
 static void analyseAcceleration( void )
@@ -507,9 +506,8 @@ static void analyseAcceleration( void )
 	yaxis = accel[1];
 	zaxis = accel[2];
 	
-	tmp = xaxis/256;			// make xaxis 8bit
+	tmp = xaxis/512;			// make xaxis 6bit
 	if ( tmp < 0 ) tmp *= -1;
-	tmp >>= 2;
 	if ( tmp >= MAX_ANGLE ) tmp = MAX_ANGLE-1;
 	tmp = tCnvModDpt[tmp];
 
