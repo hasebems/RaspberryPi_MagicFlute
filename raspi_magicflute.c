@@ -490,10 +490,10 @@ const int tCnvModDpt[MAX_ANGLE] = {
 //-------------------------------------------------------------------------
 static void calcInclination( void )
 {
-	if (( xaxis >= 0 ) && ( xaxis < 128 )){
-		sendMessageToMsgf( 0xb0, 0x01, xaxis );
+	if (( modDpt >= 0 ) && ( modDpt < 128 )){
+		sendMessageToMsgf( 0xb0, 0x01, modDpt );
 	}
-	printf("  Incli. Modulation value: %d\n",xaxis);
+	printf("  Incli. Modulation value: %d\n",modDpt);
 }
 //-------------------------------------------------------------------------
 static void analyseAcceleration( void )
