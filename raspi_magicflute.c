@@ -508,25 +508,14 @@ static void analyseAcceleration( void )
 
 	tmp = xaxis/(0x0001<<(15-MAX_ANGLE_BIT));
 	tmp = tCnvModDpt[tmp];
-	if ( tmp != modDpt ){
-		if ( tmp > modDpt ) modDpt++;
-		else modDpt--;
+	if ( tmp > modDpt ){
+		modDpt++;
 		flg = true;
 	}
-
-//	tmp = (*(accel+1))/(0x0001<<(15-MAX_ANGLE_BIT));
-//	if ( tmp != yaxis ){
-//		if ( tmp > yaxis ) yaxis++;
-//		else yaxis--;
-//		flg = true;
-//	}
-
-//	tmp = (*(accel+2))/(0x0001<<(15-MAX_ANGLE_BIT));
-//	if ( tmp != zaxis ){
-//		if ( tmp > zaxis ) zaxis++;
-//		else zaxis--;
-//		flg = true;
-//	}
+	else if ( tmp < modDpt ){
+		modDpt--;
+		flg = true;
+	}
 	
 	if ( flg == true ){
 		calcInclination();
