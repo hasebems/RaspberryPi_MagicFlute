@@ -295,13 +295,21 @@ static void analyseTouchSwitch( long crntTime )
 					tapSwData = lastSwData|TAP_FLAG;
 				}
 			}
+			
 			else if ((newSwData&SX_SW) != (lastSwData&SX_SW)){
 				//	SX Switch
 				int	newNum = tSx2DoTable[newSwData&SX_SW];
 				int oldNum = tSx2DoTable[lastSwData&SX_SW];
 				deadBand = tDeadBandPoint[newNum][oldNum];
-				startTime = crntTime;
+				if ( deadBand == 0 ){
+					//	KeyOn
+					SendMessage( newSwData );
+				}
+				else {
+					startTime = crntTime;
+				}
 			}
+			
 			else {	//	Chromatic Switch
 				//	KeyOn
 				SendMessage( newSwData );
