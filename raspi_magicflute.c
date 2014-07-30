@@ -277,7 +277,7 @@ static void analyseTouchSwitch( long crntTime )
 				deadBand = 1;
 				printf("Cross Octave Slighly\n");
 			}
-			else if ( (tapSwData&TAP_FLAG) && ( tapSwData&(~TAP_FLAG) == newSwData ){
+			else if ( (tapSwData&TAP_FLAG) && ( tapSwData&(~TAP_FLAG) == newSwData )){
 				//	KeyOn
 				SendMessage( newSwData );
 				deadBand = 0;
