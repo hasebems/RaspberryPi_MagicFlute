@@ -240,19 +240,12 @@ const int tDeadBandPoint[8][8] = {
 	{	4,	3,	2,	1,	1,	1,	0,	0	}	//	do
 };
 //-------------------------------------------------------------------------
-static void judgeSendingMessage( long diffTime, unsigned short swdata )
+static void SendMessage( unsigned short swdata )
 {
-	if ( startTime != 0 ){
-		if ( diffTime > DEADBAND_POINT_TIME*deadBand ){
-			//over deadBand
-			printf("Switch Data(L%d):%04x\n",deadBand,swdata);
-			lastNote = tSwTable[swdata & ALL_SW];
-			blinkLED(lastNote);
-			sendMessageToMsgf( 0x90, lastNote+noteShift+0x3c, 0x7f );
-			startTime = 0;
-			tapSwData = 0;
-		}
-	}
+	printf("Switch Data(DeadBand:%d):%04x\n",deadBand,swdata);
+	lastNote = tSwTable[swdata & ALL_SW];
+	blinkLED(lastNote);
+	sendMessageToMsgf( 0x90, lastNote+noteShift+0x3c, 0x7f );
 }
 //-------------------------------------------------------------------------
 static void analyseTouchSwitch( long crntTime )
@@ -261,7 +254,65 @@ static void analyseTouchSwitch( long crntTime )
 
 	newSwData = getTchSwData();
 	if ( newSwData == 0xffff ) return;
-		
+
+	if ( newSwData == lastSwData ){
+		if ( deadBand != 0 ){
+			if ( startTime != 0 ){
+				if ( crntTime-startTime > DEADBAND_POINT_TIME*deadBand ){
+					//	KeyOn
+					SendMessage( newSwData );
+					deadBand = 0;
+					startTime = 0;
+				}
+			}
+		}
+	}
+
+	else {
+		//	Sw Event
+		if ( deadBand != 0 ){
+			unsigned char note = tSwTable[newSwData & ALL_SW];
+			if ((( lastNote > note )&&((note%12)>8)&&((lastNote%12)<3)&&((lastNote-note)<4)) ||
+				(( lastNote < note )&&((note%12)<3)&&((lastNote%12)>8)&&((note-lastNote)<4))){
+				deadBand = 1;
+				printf("Cross Octave Slighly\n");
+			}
+			else if ( (tapSwData&TAP_FLAG) && ( tapSwData&(~TAP_FLAG) == newSwData ){
+				//	KeyOn
+				SendMessage( newSwData );
+				deadBand = 0;
+				startTime = 0;
+				tapSwData = 0;
+			}
+		}
+		else {
+			//	first Touch Event
+			if ( (newSwData&OCT_SW) != (lastSwData&OCT_SW) ){
+				//	oct sw on/off
+				deadBand = OCT_DEADBAND_POINT;
+				startTime = crntTime;
+				if ((newSwData&OCT_SW) & ((~lastSwData)&OCT_SW)){
+					tapSwData = lastSwData|TAP_FLAG;
+				}
+			}
+			else if ((newSwData&SX_SW) != (lastSwData&SX_SW)){
+				//	SX Switch
+				int	newNum = tSx2DoTable[newSwData&SX_SW];
+				int oldNum = tSx2DoTable[lastSwData&SX_SW];
+				deadBand = tDeadBandPoint[newNum][oldNum];
+				startTime = crntTime;
+			}
+			else {	//	Chromatic Switch
+				//	KeyOn
+				SendMessage( newSwData );
+			}
+		}
+					 
+		//	update lastSwData
+		lastSwData = newSwData;
+	}
+	
+#if 0
 	if ( newSwData != lastSwData ){
 		if (((newSwData&OCT_SW) & ((~lastSwData)&OCT_SW)) ||
 			(((~newSwData)&OCT_SW) & (lastSwData&OCT_SW))){
@@ -311,6 +362,7 @@ static void analyseTouchSwitch( long crntTime )
 	}
 
 	judgeSendingMessage( crntTime-startTime, newSwData );
+#endif
 }
 //-------------------------------------------------------------------------
 //		Keyboard Input
