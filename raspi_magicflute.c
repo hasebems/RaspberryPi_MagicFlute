@@ -319,58 +319,6 @@ static void analyseTouchSwitch( long crntTime )
 		//	update lastSwData
 		lastSwData = newSwData;
 	}
-	
-#if 0
-	if ( newSwData != lastSwData ){
-		if (((newSwData&OCT_SW) & ((~lastSwData)&OCT_SW)) ||
-			(((~newSwData)&OCT_SW) & (lastSwData&OCT_SW))){
-			//	oct sw on/off
-			if ( tapSwData == 0 ){
-				deadBand = OCT_DEADBAND_POINT;
-				tapSwData = lastSwData|TAP_FLAG;
-			}
-			else if ( tapSwData&(~TAP_FLAG) == newSwData ){
-				//	return past state
-				deadBand = 0;
-			}
-		}
-		else {
-			//	except oct
-			int	newNum = tSx2DoTable[newSwData&SX_SW];
-			int oldNum = tSx2DoTable[lastSwData&SX_SW];
-			deadBand = tDeadBandPoint[newNum][oldNum];
-		}
-
-		// check crossing octave slightly
-		unsigned char note = tSwTable[newSwData & ALL_SW];
-		if ((( lastNote > note )&&((note%12)>8)&&((lastNote%12)<3)&&((lastNote-note)<4)) ||
-			(( lastNote < note )&&((note%12)<3)&&((lastNote%12)>8)&&((note-lastNote)<4))){
-			startTime = 0;
-			deadBand = 1;
-			printf("Cross Octave Slighly\n");
-		}
-		
-		//	no Deadband
-		if ( startTime == 0 ){
-			if ( deadBand != 0 ){
-				//	start Deadband
-				startTime = crntTime;
-			}
-			else {
-				//	Direct KeyOn
-				printf("Switch Data(D0):%04x\n",newSwData);
-				lastNote = tSwTable[newSwData & ALL_SW];
-				blinkLED(lastNote);
-				sendMessageToMsgf( 0x90, lastNote+noteShift+0x3c, 0x7f );
-			}
-		}
-		
-		//	update lastSwData
-		lastSwData = newSwData;
-	}
-
-	judgeSendingMessage( crntTime-startTime, newSwData );
-#endif
 }
 //-------------------------------------------------------------------------
 //		Keyboard Input
