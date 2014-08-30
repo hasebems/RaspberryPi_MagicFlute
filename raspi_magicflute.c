@@ -413,6 +413,34 @@ static void analyseVolume( void )
 #define			MAX_SW_NUM			3
 static int		swOld[MAX_SW_NUM] = {1,1,1};
 //-------------------------------------------------------------------------
+static void transposeEvent( int num )
+{
+	int inc = 1;
+	if ( num == 0 ) inc = -1;
+	partNoteShift += inc;
+	if ( partNoteShift > 64+6 ) partNoteShift = 64-6;
+	else if ( partNoteShift < 64-6 ) partNoteShift = 64+6;
+	sendMessageToMsgf( 0xb0, 0x0c, ns );
+	printf("Note Shift value: %d\n",partNoteShift);
+	int nsx = partNoteShift - 64;
+	if ( nsx < 0 ) nsx += 12; //	0 <= nsx <= 11
+	else if ( nsx > 12 ) nsx -= 12;
+	const int tCnv[12] = {3,12,4,13,5,6,15,7,9,1,10,2};
+	writeMark(tCnv[nsx]);
+}
+//-------------------------------------------------------------------------
+static void changeVoiceEvent( int num )
+{
+	printf("Change Voice!\n");
+}
+//-------------------------------------------------------------------------
+static const void (*tFunc[MAX_SW_NUM])( int num ) =
+{
+	transposeEvent,
+	transposeEvent,
+	changeVoiceEvent
+};
+//-------------------------------------------------------------------------
 static void analyseGPIO( void )
 {
 	unsigned char note, vel;
@@ -440,35 +468,16 @@ static void analyseGPIO( void )
 		close(fd_in[i]);
 	}
 
-//	partNoteShift = vol;
-//	unsigned char ns = ((int)partNoteShift-64)/10 + 64;
-//	sendMessageToMsgf( 0xb0, 0x0c, ns );
-//	printf("Note Shift value: %d\n",partNoteShift);
-//	int nsx = ns - 64;
-//	if ( nsx < 0 ) nsx += 12; //	0 <= nsx <= 11
-//	const int tCnv[12] = {3,12,4,13,5,6,15,7,9,1,10,2};
-//	writeMark(tCnv[nsx]);
-
-	
-	
-	
-#if 0
+	//	Switch Event Job
 	for (i=0; i<MAX_SW_NUM; i++ ){
 		if ( swNew[i] != swOld[i] ){
 			if ( !swNew[i] ){
-				note = 0x3c + 2*i; vel = 0x7f;
-				printf("Now KeyOn of %d\n",i);
+				//	When push
+				(*tFunc[i])(i);
 			}
-			else {
-				note = 0x3c + 2*i; vel = 0;
-				printf("Now KeyOff of %d\n",i);
-			}
-			//	Call MSGF
-			sendMessageToMsgf( 0x90, note, vel );
 			swOld[i] = swNew[i];
 		}
 	}
-#endif
 }
 //-------------------------------------------------------------------------
 static void initGPIO( void )
@@ -637,6 +646,10 @@ void initHw( void )
 	initAda88();
 	//initADS1015();	//	AD Converter
 	initADXL345();
+
+	//--------------------------------------------------------
+	//	initialize Display
+	writeMark(0);		// "C"
 }
 //-------------------------------------------------------------------------
 //			Quit
