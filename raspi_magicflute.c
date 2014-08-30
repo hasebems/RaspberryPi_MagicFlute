@@ -409,6 +409,7 @@ static void analyseVolume( void )
 //-------------------------------------------------------------------------
 //		GPIO Input
 //-------------------------------------------------------------------------
+#define			FIRST_INPUT_GPIO	9
 #define			MAX_SW_NUM			3
 static int		swOld[MAX_SW_NUM] = {1,1,1};
 //-------------------------------------------------------------------------
@@ -419,12 +420,14 @@ static void analyseGPIO( void )
 	char	gpioPath[64];
 	int		fd_in[MAX_SW_NUM], swNew[MAX_SW_NUM];
 	
+	//	open
 	for (i=0; i<MAX_SW_NUM; i++){
-		sprintf(gpioPath,"/sys/class/gpio/gpio%d/value",i+9);
+		sprintf(gpioPath,"/sys/class/gpio/gpio%d/value",i+FIRST_INPUT_GPIO);
 		fd_in[i] = open(gpioPath,O_RDWR);
 		if ( fd_in[i] < 0 ) exit(EXIT_FAILURE);
 	}
 	
+	//	read
 	for (i=0; i<MAX_SW_NUM; i++){
 		char value[2];
 		read(fd_in[i], value, 2);
@@ -432,10 +435,24 @@ static void analyseGPIO( void )
 		else swNew[i] = 1;
 	}
 	
+	//	close
 	for (i=0; i<MAX_SW_NUM; i++){
 		close(fd_in[i]);
 	}
+
+//	partNoteShift = vol;
+//	unsigned char ns = ((int)partNoteShift-64)/10 + 64;
+//	sendMessageToMsgf( 0xb0, 0x0c, ns );
+//	printf("Note Shift value: %d\n",partNoteShift);
+//	int nsx = ns - 64;
+//	if ( nsx < 0 ) nsx += 12; //	0 <= nsx <= 11
+//	const int tCnv[12] = {3,12,4,13,5,6,15,7,9,1,10,2};
+//	writeMark(tCnv[nsx]);
+
 	
+	
+	
+#if 0
 	for (i=0; i<MAX_SW_NUM; i++ ){
 		if ( swNew[i] != swOld[i] ){
 			if ( !swNew[i] ){
@@ -451,6 +468,7 @@ static void analyseGPIO( void )
 			swOld[i] = swNew[i];
 		}
 	}
+#endif
 }
 //-------------------------------------------------------------------------
 static void initGPIO( void )
@@ -463,12 +481,14 @@ static void initGPIO( void )
 		printf("Can't open GPIO\n");
 		exit(EXIT_FAILURE);
 	}
+	write(fd_exp,"7",2);
 	write(fd_exp,"9",2);
 	write(fd_exp,"10",2);
 	write(fd_exp,"11",2);
 	close(fd_exp);
-	
-	for ( i=9; i<12; i++ ){
+
+	//	input
+	for ( i=FIRST_INPUT_GPIO; i<FIRST_INPUT_GPIO+MAX_SW_NUM; i++ ){
 		sprintf(gpiodrv,"/sys/class/gpio/gpio%d/direction",i);
 		fd_dir = open(gpiodrv,O_RDWR);
 		if ( fd_dir < 0 ){
@@ -478,6 +498,19 @@ static void initGPIO( void )
 		write(fd_dir,"in",3);
 		close(fd_dir);
 	}
+
+	//	output
+	for ( i=7; i<8; i++ ){
+		sprintf(gpiodrv,"/sys/class/gpio/gpio%d/direction",i);
+		fd_dir = open(gpiodrv,O_RDWR);
+		if ( fd_dir < 0 ){
+			printf("Can't set direction\n");
+			exit(EXIT_FAILURE);
+		}
+		write(fd_dir,"out",4);
+		close(fd_dir);
+	}
+
 }
 //-------------------------------------------------------------------------
 //		Inclination Input
@@ -567,10 +600,11 @@ void eventLoop( void )
 	crntTime = tstr.tv_sec * 1000 + tstr.tv_usec/1000;
 
 	//	Main Task
-	analyseVolume();
+	//analyseVolume();
 	analysePressure();
 	analyseTouchSwitch(crntTime);
 	analyseAcceleration();
+	analyseGPIO();
 
 	//	Analyse Processing Time
 	diff = crntTime - formerTime;
@@ -597,11 +631,11 @@ void initHw( void )
 	//	Initialize I2C device
 	initI2c();
 	initLPS331AP();
-	//	initSX1509();
+	//	initSX1509();	//	GPIO Expander
 	initMPR121();
 	initBlinkM();
 	initAda88();
-	initADS1015();
+	//initADS1015();	//	AD Converter
 	initADXL345();
 }
 //-------------------------------------------------------------------------
