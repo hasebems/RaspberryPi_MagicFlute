@@ -411,8 +411,20 @@ static void analyseVolume( void )
 //-------------------------------------------------------------------------
 #define			FIRST_INPUT_GPIO	9
 #define			MAX_SW_NUM			3
+#define			MAX_LED_NUM			1
 static int		swOld[MAX_SW_NUM] = {1,1,1};
 static unsigned char partTranspose = 64;
+static int		gpioOutputVal[MAX_LED_NUM];
+//-------------------------------------------------------------------------
+static void ledOn( int num )
+{
+	write( gpioOutputVal[num], "1", 2 );
+}
+//-------------------------------------------------------------------------
+static void ledOff( int num )
+{
+	write( gpioOutputVal[num], "0", 2 );
+}
 //-------------------------------------------------------------------------
 static void transposeEvent( int num )
 {
@@ -523,6 +535,14 @@ static void initGPIO( void )
 		close(fd_dir);
 	}
 
+	for ( i=7; i<8; i++ ){
+		sprintf(gpiodrv,"/sys/class/gpio/gpio%d/value",i);
+		gpioOutputVal[0] = open(gpiodrv,O_RDWR);
+		if ( gpioOutputVal[0] < 0 ){
+			printf("Can't set value\n");
+			exit(EXIT_FAILURE);
+		}
+	}
 }
 //-------------------------------------------------------------------------
 //		Inclination Input
@@ -543,10 +563,10 @@ const int tCnvModDpt[MAX_ANGLE] = {
 };
 //-------------------------------------------------------------------------
 const int tCnvPrtDpt[MAX_ANGLE] = {
-	0,	0,	0,	0,	10,	10,	10,	10,
-	20,	20,	20,	20,	30,	30,	30,	30,
+	0,	0,	10,	10,	20,	20,	30,	30,
 	40,	40,	50,	50,	60,	60,	70,	70,
-	80,	80,	90,	90,	100,100,100,100,
+	80,	80,	80,	80,	90,	90,	90,	90,
+	100,100,100,100,110,110,110,110,
 };
 //-------------------------------------------------------------------------
 static void sendMod( void )
@@ -679,6 +699,7 @@ void initHw( void )
 	//--------------------------------------------------------
 	//	initialize Display
 	writeMark(3);		// "C"
+	ledOn(0);
 }
 //-------------------------------------------------------------------------
 //			Quit
