@@ -412,19 +412,22 @@ static void analyseVolume( void )
 #define			FIRST_INPUT_GPIO	9
 #define			MAX_SW_NUM			3
 static int		swOld[MAX_SW_NUM] = {1,1,1};
+static unsigned char partTranspose = 64;
 //-------------------------------------------------------------------------
 static void transposeEvent( int num )
 {
 	int inc = 1;
-	if ( num == 0 ) inc = -1;
-	partNoteShift += inc;
-	if ( partNoteShift > 64+6 ) partNoteShift = 64-6;
-	else if ( partNoteShift < 64-6 ) partNoteShift = 64+6;
-	sendMessageToMsgf( 0xb0, 0x0c, partNoteShift );
-	printf("Note Shift value: %d\n",partNoteShift);
-	int nsx = partNoteShift - 64;
+	if ( num == 1 ) inc = -1;
+	partTranspose += inc;
+	if ( partTranspose > 64+6 ) partTranspose = 64-6;
+	else if ( partTranspose < 64-6 ) partTranspose = 64+6;
+	sendMessageToMsgf( 0xb0, 0x0c, partTranspose );
+	printf("Note Shift value: %d\n",partTranspose);
+
+	int nsx = partTranspose - 64;
 	if ( nsx < 0 ) nsx += 12; //	0 <= nsx <= 11
 	else if ( nsx > 12 ) nsx -= 12;
+
 	const int tCnv[12] = {3,12,4,13,5,6,15,7,9,1,10,2};
 	writeMark(tCnv[nsx]);
 }
@@ -530,6 +533,7 @@ static int xaxis = 0;					//	0 means horizontal
 static int yaxis = 0;					//	0 means horizontal
 static int zaxis = 0;
 static int modDpt = 0;
+static int prtDpt = 0;
 //-------------------------------------------------------------------------
 const int tCnvModDpt[MAX_ANGLE] = {
 	0,	0,	0,	0,	0,	0,	0,	0,
@@ -538,7 +542,14 @@ const int tCnvModDpt[MAX_ANGLE] = {
 	12,	14,	16,	19,	22,	25,	28,	31,
 };
 //-------------------------------------------------------------------------
-static void calcInclination( void )
+const int tCnvPrtDpt[MAX_ANGLE] = {
+	0,	0,	0,	0,	10,	10,	10,	10,
+	20,	20,	20,	20,	30,	30,	30,	30,
+	40,	40,	50,	50,	60,	60,	70,	70,
+	80,	80,	90,	90,	100,100,100,100,
+};
+//-------------------------------------------------------------------------
+static void sendMod( void )
 {
 	if (( modDpt >= 0 ) && ( modDpt < 128 )){
 		sendMessageToMsgf( 0xb0, 0x01, modDpt );
@@ -546,32 +557,50 @@ static void calcInclination( void )
 	printf("  Incli. Modulation value: %d\n",modDpt);
 }
 //-------------------------------------------------------------------------
+static void sendPrt( void )
+{
+	if (( modDpt >= 0 ) && ( modDpt < 128 )){
+		sendMessageToMsgf( 0xb0, 0x05, prtDpt );
+	}
+	printf("  Incli. Portamento value: %d\n",prtDpt);
+}
+//-------------------------------------------------------------------------
 static void analyseAcceleration( void )
 {
-	signed short accel[3], tmp;
-	bool flg = false;
+	signed short accel[3], xVal, modVal, prtVal;
 
 	getAccel( accel );
 	xaxis = accel[0];
 	yaxis = accel[1];
 	zaxis = accel[2];
 	
-	tmp = xaxis/512;			// make xaxis 6bit
-	if ( tmp < 0 ) tmp *= -1;
-	if ( tmp >= MAX_ANGLE ) tmp = MAX_ANGLE-1;
-	tmp = tCnvModDpt[tmp];
-
-	if ( tmp > modDpt ){
-		modDpt++;
-		flg = true;
+	xVal = xaxis/512;			// make xaxis 6bit
+	if ( xVal >= MAX_ANGLE ) xVal = MAX_ANGLE-1;
+	
+	if ( xVal < 0 ){
+		prtVal = xVal * (-1);
+		modVal = 0;
 	}
-	else if ( tmp < modDpt ){
-		modDpt--;
-		flg = true;
+	else {
+		prtVal = 0;
+		modVal = xVal;
 	}
 	
-	if ( flg == true ){
-		calcInclination();
+	//	lessen variation of modulation
+	modVal = tCnvModDpt[modVal];
+	if ( modVal > modDpt ){
+		modDpt++;
+		sendMod();
+	}
+	else if ( modVal < modDpt ){
+		modDpt--;
+		sendMod();
+	}
+
+	prtVal = tCnvPrtDpt[prtVal];
+	if ( prtVal != prtDpt ){
+		prtDpt = prtVal;
+		sendPrt();
 	}
 }
 
@@ -649,7 +678,7 @@ void initHw( void )
 
 	//--------------------------------------------------------
 	//	initialize Display
-	writeMark(0);		// "C"
+	writeMark(3);		// "C"
 }
 //-------------------------------------------------------------------------
 //			Quit
