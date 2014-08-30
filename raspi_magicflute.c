@@ -420,7 +420,7 @@ static void transposeEvent( int num )
 	partNoteShift += inc;
 	if ( partNoteShift > 64+6 ) partNoteShift = 64-6;
 	else if ( partNoteShift < 64-6 ) partNoteShift = 64+6;
-	sendMessageToMsgf( 0xb0, 0x0c, ns );
+	sendMessageToMsgf( 0xb0, 0x0c, partNoteShift );
 	printf("Note Shift value: %d\n",partNoteShift);
 	int nsx = partNoteShift - 64;
 	if ( nsx < 0 ) nsx += 12; //	0 <= nsx <= 11
@@ -434,7 +434,7 @@ static void changeVoiceEvent( int num )
 	printf("Change Voice!\n");
 }
 //-------------------------------------------------------------------------
-static const void (*tFunc[MAX_SW_NUM])( int num ) =
+static void (*const tFunc[MAX_SW_NUM])( int num ) =
 {
 	transposeEvent,
 	transposeEvent,
