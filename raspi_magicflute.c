@@ -670,11 +670,14 @@ void eventLoop( void )
 	formerTime = crntTime;
 	timerCount++;
 
+	//	Measure Main Loop Time & Make heartbeats
 	if ( timerCount >= AVERAGE_TIMER_CNT ){
 		printf("---Loop Interval value(100times): %d [msec]\n",timeSumming);
 		timeSumming = 0;
 		timerCount = 0;
+		ledOn(0);
 	}
+	if ( timerCount > (AVERAGE_TIMER_CNT/10) ) ledOff(0);
 }
 //-------------------------------------------------------------------------
 //			Initialize
@@ -699,7 +702,7 @@ void initHw( void )
 	//--------------------------------------------------------
 	//	initialize Display
 	writeMark(3);		// "C"
-	ledOn(0);
+	ledOff(0);
 }
 //-------------------------------------------------------------------------
 //			Quit
