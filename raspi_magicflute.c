@@ -174,8 +174,9 @@ static void analysePressure( void )
 
 	if ( currentExp != lastExp ){
 		//	Generate Expression Event
-		if ( currentExp > lastExp ) lastExp++;
-		else lastExp--;
+		//if ( currentExp > lastExp ) lastExp++;
+		//else lastExp--;
+		lastExp = currentExp;
 		
 		//	controll LED
 		if ( lastExp == 0 ){
