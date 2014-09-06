@@ -199,7 +199,6 @@ static void analysePressure( void )
 static unsigned char lastNote = 0;
 static unsigned short lastSwData = 0;
 static unsigned short tapSwData = 0;
-static int noteShift = 0;
 //	Time Measurement
 static long	startTime = 0;	//	!=0 means during deadBand
 static int deadBand = 0;
@@ -246,7 +245,7 @@ static void SendMessage( unsigned short swdata )
 	printf("Switch Data(DeadBand:%d):%04x\n",deadBand,swdata);
 	lastNote = tSwTable[swdata & ALL_SW];
 	blinkLED(lastNote);
-	sendMessageToMsgf( 0x90, lastNote+noteShift+0x3c, 0x7f );
+	sendMessageToMsgf( 0x90, lastNote+0x3c, 0x7f );
 }
 //-------------------------------------------------------------------------
 static void analyseTouchSwitch( long crntTime )
@@ -413,8 +412,9 @@ static void analyseVolume( void )
 #define			FIRST_INPUT_GPIO	9
 #define			MAX_SW_NUM			3
 #define			MAX_LED_NUM			1
+#define			MIDI_CENTER			64
 static int		swOld[MAX_SW_NUM] = {1,1,1};
-static unsigned char partTranspose = 64;
+static unsigned char partTranspose = MIDI_CENTER;
 static int		gpioOutputVal[MAX_LED_NUM];
 //-------------------------------------------------------------------------
 static void ledOn( int num )
@@ -432,12 +432,12 @@ static void transposeEvent( int num )
 	int inc = 1;
 	if ( num == 1 ) inc = -1;
 	partTranspose += inc;
-	if ( partTranspose > 64+6 ) partTranspose = 64-6;
-	else if ( partTranspose < 64-6 ) partTranspose = 64+6;
+	if ( partTranspose > MIDI_CENTER+6 ) partTranspose = MIDI_CENTER-6;
+	else if ( partTranspose < MIDI_CENTER-6 ) partTranspose = MIDI_CENTER+6;
 	sendMessageToMsgf( 0xb0, 0x0c, partTranspose );
 	printf("Note Shift value: %d\n",partTranspose);
 
-	int nsx = partTranspose - 64;
+	int nsx = partTranspose - MIDI_CENTER;
 	if ( nsx < 0 ) nsx += 12; //	0 <= nsx <= 11
 	else if ( nsx > 12 ) nsx -= 12;
 
@@ -628,10 +628,12 @@ static void analyseAcceleration( void )
 //-------------------------------------------------------------------------
 //		event Loop
 //-------------------------------------------------------------------------
+#define		AVERAGE_TIMER_CNT		100		//	This times
+
 static long formerTime;
 static long timeSumming;
 static int	timerCount;
-#define		AVERAGE_TIMER_CNT		100		//	This times
+static bool	useAccelSensor
 //-------------------------------------------------------------------------
 void eventLoopInit( INIT_PRM* prm )
 {
@@ -640,7 +642,8 @@ void eventLoopInit( INIT_PRM* prm )
 	
 	sendMessageToMsgf( 0xb0, 0x0b, 0 );
 	soundOn = 0;
-	noteShift = prm->transpose;
+	partTranspose = prm->transpose + MIDI_CENTER;
+	useAccelSensor = prm->accelSensor;
 	timerCount = 0;
 	timeSumming = 0;
 
@@ -662,7 +665,7 @@ void eventLoop( void )
 	//analyseVolume();
 	analysePressure();
 	analyseTouchSwitch(crntTime);
-	analyseAcceleration();
+	if ( useAccelSensor == true ) analyseAcceleration();
 	analyseGPIO();
 
 	//	Analyse Processing Time
@@ -698,7 +701,7 @@ void initHw( void )
 	initBlinkM();
 	initAda88();
 	//initADS1015();	//	AD Converter
-	initADXL345();
+	if ( useAccelSensor == true ) initADXL345();
 
 	//--------------------------------------------------------
 	//	initialize Display

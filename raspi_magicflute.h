@@ -12,6 +12,7 @@
 typedef struct {
 
 	int		transpose;		// Transpose
+	bool	accelSensor;	//	use or not
 
 } INIT_PRM;
 

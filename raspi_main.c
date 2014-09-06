@@ -36,6 +36,7 @@ static int verbose = 0;                  /* verbose flag */
 static int resample = 1;                 /* enable alsa-lib resampling */
 static int period_event = 0;             /* produce poll event after each period */
 static int transpose = 0;
+static bool useAccelerationSensor = true;
 
 static snd_pcm_sframes_t buffer_size;
 static snd_pcm_sframes_t period_size;
@@ -337,6 +338,7 @@ static int soundGenerateLoop( snd_pcm_t *handle )
 
 	INIT_PRM	prm;
 	prm.transpose = transpose;
+	prm.accelSensor = useAccelerationSensor;
 	
 	eventLoopInit(&prm);
 	
@@ -449,6 +451,7 @@ static int optionCommand(int morehelp, int argc, char *argv[])
 		{"noresample", 1, NULL, 'n'},
 		{"pevent", 1, NULL, 'e'},
 		{"transpose", 1, NULL, 't'},
+		{"not use acceleration Sensor", 0, NULL, 'a'},
 		{NULL, 0, NULL, 0},
 	};
 
@@ -517,6 +520,9 @@ static int optionCommand(int morehelp, int argc, char *argv[])
 				break;
 			case 't':
 				transpose = atoi(optarg);
+				break;
+			case 'a':
+				useAccelerationSensor = false;
 				break;
 			default: break;
 		}
