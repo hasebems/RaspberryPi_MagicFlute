@@ -16,9 +16,10 @@ typedef struct {
 
 } INIT_PRM;
 
-void eventLoopInit( INIT_PRM* prm );
+void eventLoopInit( void );
 void eventLoop( void );
 
+void settings( INIT_PRM* prm );
 void initHw( void );
 void quitHw( void );
 

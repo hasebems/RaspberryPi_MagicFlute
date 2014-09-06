@@ -336,11 +336,7 @@ static int soundGenerateLoop( snd_pcm_t *handle )
 	snd_pcm_state_t state;
 	int err, first = 1;
 
-	INIT_PRM	prm;
-	prm.transpose = transpose;
-	prm.accelSensor = useAccelerationSensor;
-	
-	eventLoopInit(&prm);
+	eventLoopInit();
 	
 	while (1) {
 		eventLoop();
@@ -423,6 +419,8 @@ static void help(void)
 		   "-v,--verbose   show the PCM setup parameters\n"
 		   "-n,--noresample  do not resample\n"
 		   "-e,--pevent    enable poll event after each period\n"
+		   "-t,--transpose transpose\n"
+		   "-a,--pevent    not use acceleration sensor\n"
 		   "\n");
 	printf("Recognized sample formats are:");
 	for (k = 0; k < SND_PCM_FORMAT_LAST; ++k) {
@@ -611,6 +609,10 @@ int main(int argc, char *argv[])
 
 	//--------------------------------------------------------
 	//	Init Hardware
+	INIT_PRM	prm;
+	prm.transpose = transpose;
+	prm.accelSensor = useAccelerationSensor;
+	settings(&prm);
 	initHw();
 
 	//--------------------------------------------------------

@@ -635,15 +635,13 @@ static long timeSumming;
 static int	timerCount;
 static bool	useAccelSensor;
 //-------------------------------------------------------------------------
-void eventLoopInit( INIT_PRM* prm )
+void eventLoopInit( void )
 {
 	struct	timeval tstr;
 	long	crntTime;
 	
 	sendMessageToMsgf( 0xb0, 0x0b, 0 );
 	soundOn = 0;
-	partTranspose = prm->transpose + MIDI_CENTER;
-	useAccelSensor = prm->accelSensor;
 	timerCount = 0;
 	timeSumming = 0;
 
@@ -685,6 +683,15 @@ void eventLoop( void )
 }
 //-------------------------------------------------------------------------
 //			Initialize
+//-------------------------------------------------------------------------
+void settings( INIT_PRM* prm )
+{
+	partTranspose = prm->transpose + MIDI_CENTER;
+	useAccelSensor = prm->accelSensor;
+	printf("Init Transpose : %d\n",partTranspose);
+	if ( useAccelSensor == true ) printf("Use Acceleration Sensor.\n");
+	else printf("Not use Acceleration Sensor.\n");
+}
 //-------------------------------------------------------------------------
 void initHw( void )
 {
