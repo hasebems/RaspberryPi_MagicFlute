@@ -332,7 +332,7 @@ static void changeTranspose( unsigned char tp )
 	
 	if ( tp > MIDI_CENTER+6 ) partTranspose = MIDI_CENTER-6;
 	else if ( tp < MIDI_CENTER-6 ) partTranspose = MIDI_CENTER+6;
-	else tp = partTranspose;
+	else partTranspose = tp;
 	
 	sendMessageToMsgf( 0xb0, 0x0c, partTranspose );
 	printf("Note Shift value: %d\n",partTranspose);
