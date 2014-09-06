@@ -445,9 +445,9 @@ static int optionCommand(int morehelp, int argc, char *argv[])
 		{"buffer", 1, NULL, 'b'},
 		{"period", 1, NULL, 'p'},
 		{"format", 1, NULL, 'o'},
-		{"verbose", 1, NULL, 'v'},
-		{"noresample", 1, NULL, 'n'},
-		{"pevent", 1, NULL, 'e'},
+		{"verbose", 0, NULL, 'v'},
+		{"noresample", 0, NULL, 'n'},
+		{"pevent", 0, NULL, 'e'},
 		{"transpose", 1, NULL, 't'},
 		{"not use acceleration Sensor", 0, NULL, 'a'},
 		{NULL, 0, NULL, 0},
@@ -455,7 +455,7 @@ static int optionCommand(int morehelp, int argc, char *argv[])
 
 	while (1) {
 		int c;
-		if ((c = getopt_long(argc, argv, "hD:r:c:f:b:p:m:o:vnet:", long_option, NULL)) < 0)
+		if ((c = getopt_long(argc, argv, "hD:r:c:f:b:p:m:o:vnet:a", long_option, NULL)) < 0)
 			break;
 		switch (c) {
 			case 'h':
