@@ -688,7 +688,7 @@ void settings( INIT_PRM* prm )
 {
 	partTranspose = prm->transpose + MIDI_CENTER;
 	useAccelSensor = prm->accelSensor;
-	printf("Init Transpose : %d\n",partTranspose);
+	printf("Init Transpose : %d\n",prm->transpose);
 	if ( useAccelSensor == true ) printf("Use Acceleration Sensor.\n");
 	else printf("Not use Acceleration Sensor.\n");
 }
