@@ -633,7 +633,7 @@ static void analyseAcceleration( void )
 static long formerTime;
 static long timeSumming;
 static int	timerCount;
-static bool	useAccelSensor
+static bool	useAccelSensor;
 //-------------------------------------------------------------------------
 void eventLoopInit( INIT_PRM* prm )
 {
