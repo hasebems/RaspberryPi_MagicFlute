@@ -635,11 +635,11 @@ static void analyseAcceleration( void )
 //		event Loop
 //-------------------------------------------------------------------------
 #define		AVERAGE_TIMER_CNT		100		//	This times
-
 static long formerTime;
 static long timeSumming;
 static int	timerCount;
 static bool	useAccelSensor;
+static unsigned char transposeSetting;
 //-------------------------------------------------------------------------
 void eventLoopInit( void )
 {
@@ -650,7 +650,8 @@ void eventLoopInit( void )
 	soundOn = 0;
 	timerCount = 0;
 	timeSumming = 0;
-
+	changeTranspose( transposeSetting );
+	
 	//	Time Measurement
 	gettimeofday(&tstr, NULL);
 	formerTime = tstr.tv_sec * 1000 + tstr.tv_usec/1000;
@@ -692,7 +693,7 @@ void eventLoop( void )
 //-------------------------------------------------------------------------
 void settings( INIT_PRM* prm )
 {
-	partTranspose = prm->transpose + MIDI_CENTER;
+	transposeSetting = (unsigned char)prm->transpose + MIDI_CENTER;
 	useAccelSensor = prm->accelSensor;
 	printf("Init Transpose : %d\n",prm->transpose);
 	if ( useAccelSensor == true ) printf("Use Acceleration Sensor.\n");
