@@ -321,6 +321,30 @@ static void analyseTouchSwitch( long crntTime )
 	}
 }
 //-------------------------------------------------------------------------
+//		Settings
+//-------------------------------------------------------------------------
+#define			MIDI_CENTER			64
+static unsigned char partTranspose = MIDI_CENTER;
+//-------------------------------------------------------------------------
+static void changeTranspose( unsigned char tp )
+{
+	if ( tp == partTranspose ) return;
+	
+	if ( tp > MIDI_CENTER+6 ) partTranspose = MIDI_CENTER-6;
+	else if ( tp < MIDI_CENTER-6 ) partTranspose = MIDI_CENTER+6;
+	else tp = partTranspose;
+	
+	sendMessageToMsgf( 0xb0, 0x0c, partTranspose );
+	printf("Note Shift value: %d\n",partTranspose);
+	
+	int nsx = partTranspose - MIDI_CENTER;
+	if ( nsx < 0 ) nsx += 12; //	0 <= nsx <= 11
+	else if ( nsx > 12 ) nsx -= 12;
+	
+	const int tCnv[12] = {3,12,4,13,5,6,15,7,9,1,10,2};
+	writeMark(tCnv[nsx]);
+}
+//-------------------------------------------------------------------------
 //		Keyboard Input
 //-------------------------------------------------------------------------
 static int	c=0, d=0, e=0, f=0, g=0, a=0, b=0, q=0;
@@ -374,13 +398,7 @@ static void analyseVolume( void )
 		case 0:{
 			if ( vol != partNoteShift ){
 				partNoteShift = vol;
-				unsigned char ns = ((int)partNoteShift-64)/10 + 64;
-				sendMessageToMsgf( 0xb0, 0x0c, ns );
-				printf("Note Shift value: %d\n",partNoteShift);
-				int nsx = ns - 64;
-				if ( nsx < 0 ) nsx += 12; //	0 <= nsx <= 11
-				const int tCnv[12] = {3,12,4,13,5,6,15,7,9,1,10,2};
-				writeMark(tCnv[nsx]);
+				changeTranspose(((int)partNoteShift-64)/10 + 64);
 			}
 			break;
 		}
@@ -412,9 +430,7 @@ static void analyseVolume( void )
 #define			FIRST_INPUT_GPIO	9
 #define			MAX_SW_NUM			3
 #define			MAX_LED_NUM			1
-#define			MIDI_CENTER			64
 static int		swOld[MAX_SW_NUM] = {1,1,1};
-static unsigned char partTranspose = MIDI_CENTER;
 static int		gpioOutputVal[MAX_LED_NUM];
 //-------------------------------------------------------------------------
 static void ledOn( int num )
@@ -431,18 +447,8 @@ static void transposeEvent( int num )
 {
 	int inc = 1;
 	if ( num == 1 ) inc = -1;
-	partTranspose += inc;
-	if ( partTranspose > MIDI_CENTER+6 ) partTranspose = MIDI_CENTER-6;
-	else if ( partTranspose < MIDI_CENTER-6 ) partTranspose = MIDI_CENTER+6;
-	sendMessageToMsgf( 0xb0, 0x0c, partTranspose );
-	printf("Note Shift value: %d\n",partTranspose);
-
-	int nsx = partTranspose - MIDI_CENTER;
-	if ( nsx < 0 ) nsx += 12; //	0 <= nsx <= 11
-	else if ( nsx > 12 ) nsx -= 12;
-
-	const int tCnv[12] = {3,12,4,13,5,6,15,7,9,1,10,2};
-	writeMark(tCnv[nsx]);
+	unsigned char tpTemp = partTranspose + inc;
+	changeTranspose(tpTemp);
 }
 //-------------------------------------------------------------------------
 static void changeVoiceEvent( int num )
