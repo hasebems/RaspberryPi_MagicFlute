@@ -274,6 +274,7 @@ static void analyseTouchSwitch( long crntTime )
 		if ((( lastNote > note )&&((note%12)>8)&&((lastNote%12)<3)&&((lastNote-note)<4)) ||
 			(( lastNote < note )&&((note%12)<3)&&((lastNote%12)>8)&&((note-lastNote)<4))){
 			deadBand = 1;
+			startTime = crntTime;
 			printf("Cross Octave Slighly\n");
 		}
 
