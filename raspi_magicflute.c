@@ -671,9 +671,9 @@ void eventLoop( void )
 	crntTime = tstr.tv_sec * 1000 + tstr.tv_usec/1000;
 
 	//	Main Task
+	analyseTouchSwitch(crntTime);
 	//analyseVolume();
 	analysePressure();
-	analyseTouchSwitch(crntTime);
 	if ( useAccelSensor == true ) analyseAcceleration();
 	analyseGPIO();
 
