@@ -256,7 +256,7 @@ static void analyseTouchSwitch( long crntTime )
 	if ( newSwData == 0xffff ) return;
 
 	if ( newSwData == lastSwData ){
-		if ( deadBand != 0 ){
+		if ( deadBand > 0 ){
 			if ( startTime != 0 ){
 				if ( crntTime-startTime > DEADBAND_POINT_TIME*deadBand ){
 					//	KeyOn
@@ -270,49 +270,52 @@ static void analyseTouchSwitch( long crntTime )
 
 	else {
 		//	Sw Event
-		if ( deadBand != 0 ){
-			unsigned char note = tSwTable[newSwData & ALL_SW];
-			if ((( lastNote > note )&&((note%12)>8)&&((lastNote%12)<3)&&((lastNote-note)<4)) ||
-				(( lastNote < note )&&((note%12)<3)&&((lastNote%12)>8)&&((note-lastNote)<4))){
-				deadBand = 1;
-				printf("Cross Octave Slighly\n");
-			}
-			else if ( (tapSwData&TAP_FLAG) && ( tapSwData&(~TAP_FLAG) == newSwData )){
-				//	KeyOn
-				SendMessage( newSwData );
-				deadBand = 0;
-				startTime = 0;
-				tapSwData = 0;
-			}
+		unsigned char note = tSwTable[newSwData & ALL_SW];
+		if ((( lastNote > note )&&((note%12)>8)&&((lastNote%12)<3)&&((lastNote-note)<4)) ||
+			(( lastNote < note )&&((note%12)<3)&&((lastNote%12)>8)&&((note-lastNote)<4))){
+			deadBand = 1;
+			printf("Cross Octave Slighly\n");
 		}
+
 		else {
-			//	first Touch Event
-			if ( (newSwData&OCT_SW) != (lastSwData&OCT_SW) ){
-				//	oct sw on/off
-				deadBand = OCT_DEADBAND_POINT;
-				startTime = crntTime;
-				if ((newSwData&OCT_SW) & ((~lastSwData)&OCT_SW)){
-					tapSwData = lastSwData|TAP_FLAG;
+			if ( deadBand > 0 ){
+				if ( (tapSwData&TAP_FLAG) && ( tapSwData&(~TAP_FLAG) == newSwData )){
+					//	KeyOn
+					SendMessage( newSwData );
+					deadBand = 0;
+					startTime = 0;
+					tapSwData = 0;
 				}
 			}
+			else {
+				//	first Touch Event
+				if ( (newSwData&OCT_SW) != (lastSwData&OCT_SW) ){
+					//	oct sw on/off
+					deadBand = OCT_DEADBAND_POINT;
+					startTime = crntTime;
+					if ((newSwData&OCT_SW) & ((~lastSwData)&OCT_SW)){
+						tapSwData = lastSwData|TAP_FLAG;
+					}
+				}
 			
-			else if ((newSwData&SX_SW) != (lastSwData&SX_SW)){
-				//	SX Switch
-				int	newNum = tSx2DoTable[newSwData&SX_SW];
-				int oldNum = tSx2DoTable[lastSwData&SX_SW];
-				deadBand = tDeadBandPoint[newNum][oldNum];
-				if ( deadBand == 0 ){
+				else if ((newSwData&SX_SW) != (lastSwData&SX_SW)){
+					//	SX Switch
+					int	newNum = tSx2DoTable[newSwData&SX_SW];
+					int oldNum = tSx2DoTable[lastSwData&SX_SW];
+					deadBand = tDeadBandPoint[newNum][oldNum];
+					if ( deadBand == 0 ){
+						//	KeyOn
+						SendMessage( newSwData );
+					}
+					else {
+						startTime = crntTime;
+					}
+				}
+			
+				else {	//	Chromatic Switch
 					//	KeyOn
 					SendMessage( newSwData );
 				}
-				else {
-					startTime = crntTime;
-				}
-			}
-			
-			else {	//	Chromatic Switch
-				//	KeyOn
-				SendMessage( newSwData );
 			}
 		}
 					 
