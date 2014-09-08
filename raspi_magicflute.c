@@ -266,7 +266,7 @@ static void analyseTouchSwitch( long crntTime )
 			int diff;
 			unsigned char newNote = tSwTable[newSwData & ALL_SW];
 
-			if ( newNote > lastNote ) diff = newNote - currentNote;
+			if ( newNote > currentNote ) diff = newNote - currentNote;
 			else diff = currentNote - newNote;
 
 			if ( diff > 11 ){
