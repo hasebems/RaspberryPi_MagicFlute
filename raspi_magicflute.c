@@ -211,7 +211,7 @@ static int deadBand = 0;
 //-------------------------------------------------------------------------
 //	Adjustable Value
 #define		DEADBAND_POINT_TIME		50		//	[msec]
-#define		OCT_DEADBAND_POINT		4		//	200msec
+#define		OCT_DEADBAND_POINT		2		//	200msec
 //-------------------------------------------------------------------------
 const unsigned char tSwTable[64] = {
 	
@@ -230,14 +230,14 @@ const unsigned char tSwTable[64] = {
 const unsigned char tSx2DoTable[8] = {7,4,3,5,2,6,1,0};
 const int tDeadBandPoint[8][8] = {
 //		do, re, mi, fa, so, la, ti, do	before
-	{	0,	0,	1,	1,	1,	2,	3,	4	},	//	do	after
-	{	0,	0,	1,	1,	1,	1,	2,	3	},	//	re
+	{	0,	0,	1,	1,	1,	2,	2,	2	},	//	do	after
+	{	0,	0,	1,	1,	1,	1,	2,	2	},	//	re
 	{	1,	0,	0,	0,	1,	1,	1,	2	},	//	mi
 	{	1,	1,	0,	0,	0,	1,	1,	1	},	//	fa
 	{	1,	1,	1,	0,	0,	0,	1,	1	},	//	so
 	{	2,	1,	1,	1,	1,	0,	0,	1	},	//	la
-	{	3,	2,	1,	1,	1,	0,	0,	0	},	//	ti
-	{	4,	3,	2,	1,	1,	1,	0,	0	}	//	do
+	{	2,	2,	1,	1,	1,	0,	0,	0	},	//	ti
+	{	2,	2,	2,	1,	1,	1,	0,	0	}	//	do
 };
 //-------------------------------------------------------------------------
 static void SendMessage( unsigned short swdata )
