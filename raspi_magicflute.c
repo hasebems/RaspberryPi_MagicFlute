@@ -196,13 +196,6 @@ static void analysePressure( void )
 //-------------------------------------------------------------------------
 //		Touch Sencer Input
 //-------------------------------------------------------------------------
-static unsigned char lastNote = 0;
-static unsigned short lastSwData = 0;
-static unsigned short tapSwData = 0;
-//	Time Measurement
-static long	startTime = 0;	//	!=0 means during deadBand
-static int deadBand = 0;
-//-------------------------------------------------------------------------
 #define		OCT_SW		0x30
 #define		CRO_SW		0x08
 #define		SX_SW		0x07
@@ -211,7 +204,12 @@ static int deadBand = 0;
 //-------------------------------------------------------------------------
 //	Adjustable Value
 #define		DEADBAND_POINT_TIME		50		//	[msec]
-#define		OCT_DEADBAND_POINT		3		//	150msec
+//-------------------------------------------------------------------------
+static unsigned short lastSwData = ALL_SW;
+static unsigned short tapSwData = 0;
+//	Time Measurement
+static long	startTime = 0;	//	!=0 means during deadBand
+static int deadBand = 0;
 //-------------------------------------------------------------------------
 const unsigned char tSwTable[64] = {
 	
@@ -227,27 +225,13 @@ const unsigned char tSwTable[64] = {
 	0x0d, 0x08, 0x06, 0x08, 0x03, 0x0a, 0x03, 0x01		//	xxx
 };
 //-------------------------------------------------------------------------
-#if 0
-const unsigned char tSx2DoTable[8] = {7,4,3,5,2,6,1,0};
-const int tDeadBandPoint[8][8] = {
-//		do, re, mi, fa, so, la, ti, do	before
-	{	0,	0,	1,	1,	1,	2,	2,	2	},	//	do	after
-	{	0,	0,	1,	1,	1,	1,	2,	2	},	//	re
-	{	1,	0,	0,	0,	1,	1,	1,	2	},	//	mi
-	{	1,	1,	0,	0,	0,	1,	1,	1	},	//	fa
-	{	1,	1,	1,	0,	0,	0,	1,	1	},	//	so
-	{	2,	1,	1,	1,	1,	0,	0,	1	},	//	la
-	{	2,	2,	1,	1,	1,	0,	0,	0	},	//	ti
-	{	2,	2,	2,	1,	1,	1,	0,	0	}	//	do
-};
-#endif
-//-------------------------------------------------------------------------
 static void SendMessage( unsigned short swdata )
 {
+	unsigned char newNote;
 	printf("Switch Data(DeadBand:%d):%04x\n",deadBand,swdata);
-	lastNote = tSwTable[swdata & ALL_SW];
-	blinkLED(lastNote);
-	sendMessageToMsgf( 0x90, lastNote+0x3c, 0x7f );
+	newNote = tSwTable[swdata & ALL_SW];
+	blinkLED(newNote);
+	sendMessageToMsgf( 0x90, newNote+0x3c, 0x7f );
 	deadBand = 0;
 	startTime = 0;
 	tapSwData = 0;
@@ -289,7 +273,7 @@ static void analyseTouchSwitch( long crntTime )
 
 			if ( diff > 11 ){
 				startTime = crntTime;
-				deadBand = 3;
+				deadBand = 4;
 				if ((newSwData^lastSwData)==OCT_SW){
 					tapSwData = lastSwData|TAP_FLAG;
 				}
@@ -309,57 +293,6 @@ static void analyseTouchSwitch( long crntTime )
 				SendMessage( newSwData );
 			}
 		}
-		
-#if 0
-		//	Sw Event
-		unsigned char note = tSwTable[newSwData & ALL_SW];
-		if ((( lastNote > note )&&((note%12)>8)&&((lastNote%12)<3)&&((lastNote-note)<4)) ||
-			(( lastNote < note )&&((note%12)<3)&&((lastNote%12)>8)&&((note-lastNote)<4))){
-			deadBand = 1;
-			startTime = crntTime;
-			printf("Cross Octave Slighly\n");
-		}
-
-		else {
-			if ( deadBand > 0 ){
-				if ( (tapSwData&TAP_FLAG) && ( tapSwData&(~TAP_FLAG) == newSwData )){
-					//	KeyOn
-					SendMessage( newSwData );
-					tapSwData = 0;
-				}
-			}
-			else {
-				//	first Touch Event
-				if ( (newSwData&OCT_SW) != (lastSwData&OCT_SW) ){
-					//	oct sw on/off
-					deadBand = OCT_DEADBAND_POINT;
-					startTime = crntTime;
-					if ((newSwData&OCT_SW) & ((~lastSwData)&OCT_SW)){
-						tapSwData = lastSwData|TAP_FLAG;
-					}
-				}
-
-				else if ((newSwData&SX_SW) != (lastSwData&SX_SW)){
-					//	SX Switch
-					int	newNum = tSx2DoTable[newSwData&SX_SW];
-					int oldNum = tSx2DoTable[lastSwData&SX_SW];
-					deadBand = tDeadBandPoint[newNum][oldNum];
-					if ( deadBand == 0 ){
-						//	KeyOn
-						SendMessage( newSwData );
-					}
-					else {
-						startTime = crntTime;
-					}
-				}
-				
-				else {	//	Chromatic Switch
-					//	KeyOn
-					SendMessage( newSwData );
-				}
-			}
-		}
-#endif
 					 
 		//	update lastSwData
 		lastSwData = newSwData;
