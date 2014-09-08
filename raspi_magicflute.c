@@ -258,6 +258,7 @@ static void analyseTouchSwitch( long crntTime )
 	else {
 		if (( deadBand > 0 ) && (tapSwData&TAP_FLAG) && ( tapSwData&(~TAP_FLAG) == newSwData )){
 			//	KeyOn
+			printf("<<Tapped>>\n")
 			SendMessage( newSwData );
 		}
 
