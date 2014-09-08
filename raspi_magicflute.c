@@ -207,6 +207,7 @@ static void analysePressure( void )
 //-------------------------------------------------------------------------
 static unsigned short lastSwData = ALL_SW;
 static unsigned short tapSwData = 0;
+static unsigned char currentNote = 0;
 //	Time Measurement
 static long	startTime = 0;	//	!=0 means during deadBand
 static int deadBand = 0;
@@ -227,11 +228,10 @@ const unsigned char tSwTable[64] = {
 //-------------------------------------------------------------------------
 static void SendMessage( unsigned short swdata )
 {
-	unsigned char newNote;
 	printf("Switch Data(DeadBand:%d):%04x\n",deadBand,swdata);
-	newNote = tSwTable[swdata & ALL_SW];
-	blinkLED(newNote);
-	sendMessageToMsgf( 0x90, newNote+0x3c, 0x7f );
+	currentNote = tSwTable[swdata & ALL_SW];
+	blinkLED(currentNote);
+	sendMessageToMsgf( 0x90, currentNote+0x3c, 0x7f );
 	deadBand = 0;
 	startTime = 0;
 	tapSwData = 0;
@@ -265,10 +265,9 @@ static void analyseTouchSwitch( long crntTime )
 		else {
 			int diff;
 			unsigned char newNote = tSwTable[newSwData & ALL_SW];
-			unsigned char lastSwNote = tSwTable[lastSwData & ALL_SW];
 
-			if ( newNote > lastSwNote ) diff = newNote - lastSwNote;
-			else diff = lastSwNote - newNote;
+			if ( newNote > lastNote ) diff = newNote - currentNote;
+			else diff = currentNote - newNote;
 
 			if ( diff > 11 ){
 				startTime = crntTime;
