@@ -256,7 +256,7 @@ static void analyseTouchSwitch( long crntTime )
 	}
 
 	else {
-		if (( deadBand > 0 ) && (tapSwData&TAP_FLAG) && ( tapSwData&(~TAP_FLAG) == newSwData )){
+		if (( deadBand > 0 ) && (tapSwData&TAP_FLAG) && ( tapSwData&ALL_SW == newSwData )){
 			//	KeyOn
 			printf("<<Tapped>>\n");
 			SendMessage( newSwData );
@@ -273,7 +273,7 @@ static void analyseTouchSwitch( long crntTime )
 			if ( diff > 11 ){
 				startTime = crntTime;
 				deadBand = 4;
-				if ((newSwData^lastSwData)&OCT_SW){
+				if ((newSwData^lastSwData)&newSwData){
 					printf("<<Set Tap>>\n");
 					tapSwData = lastSwData|TAP_FLAG;
 				}
