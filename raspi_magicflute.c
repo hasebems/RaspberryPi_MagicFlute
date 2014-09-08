@@ -273,7 +273,8 @@ static void analyseTouchSwitch( long crntTime )
 			if ( diff > 11 ){
 				startTime = crntTime;
 				deadBand = 4;
-				if ((newSwData^lastSwData)==OCT_SW){
+				if ((newSwData^lastSwData)&OCT_SW){
+					printf("<<Set Tap>>\n");
 					tapSwData = lastSwData|TAP_FLAG;
 				}
 			}
