@@ -24,6 +24,8 @@
 #include	"raspi_hw.h"
 
 static unsigned char soundOn = 0;
+static bool	useAccelSensor;
+static bool useFullColorLed;
 
 //-------------------------------------------------------------------------
 //		Send Message
@@ -617,8 +619,6 @@ static void analyseAcceleration( void )
 static long formerTime;
 static long timeSumming;
 static int	timerCount;
-static bool	useAccelSensor;
-static bool useFullColorLed;
 static unsigned char transposeSetting;
 //-------------------------------------------------------------------------
 void eventLoopInit( void )
