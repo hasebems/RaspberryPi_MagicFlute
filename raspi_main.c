@@ -37,6 +37,7 @@ static int resample = 1;                 /* enable alsa-lib resampling */
 static int period_event = 0;             /* produce poll event after each period */
 static int transpose = 0;
 static bool useAccelerationSensor = true;
+static bool useFullColorLed = true;
 
 static snd_pcm_sframes_t buffer_size;
 static snd_pcm_sframes_t period_size;
@@ -419,8 +420,9 @@ static void help(void)
 		   "-v,--verbose   show the PCM setup parameters\n"
 		   "-n,--noresample  do not resample\n"
 		   "-e,--pevent    enable poll event after each period\n"
-		   "-t,--transpose transpose\n"
-		   "-a,--pevent    not use acceleration sensor\n"
+		   "-t, transpose\n"
+		   "-a, not use acceleration sensor\n"
+		   "-l, not use full color LED\n"
 		   "\n");
 	printf("Recognized sample formats are:");
 	for (k = 0; k < SND_PCM_FORMAT_LAST; ++k) {
@@ -522,6 +524,9 @@ static int optionCommand(int morehelp, int argc, char *argv[])
 			case 'a':
 				useAccelerationSensor = false;
 				break;
+			case 'l':
+				useFullColorLed = false;
+				break;
 			default: break;
 		}
 	}
@@ -612,6 +617,7 @@ int main(int argc, char *argv[])
 	INIT_PRM	prm;
 	prm.transpose = transpose;
 	prm.accelSensor = useAccelerationSensor;
+	prm.fullColorLed = useFullColorLed;
 	settings(&prm);
 	initHw();
 

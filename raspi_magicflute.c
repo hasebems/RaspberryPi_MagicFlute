@@ -60,6 +60,8 @@ const unsigned char tNoteToColor[13][3] = {
 //-------------------------------------------------------------------------
 void blinkLED( unsigned char mvDo )
 {
+	if ( useFullColorLed == false ) return;
+	
 	if ( mvDo == TURN_OFF_LED ){
 		changeColor((unsigned char*)tNoteToColor[12]);
 	}
@@ -616,6 +618,7 @@ static long formerTime;
 static long timeSumming;
 static int	timerCount;
 static bool	useAccelSensor;
+static bool useFullColorLed;
 static unsigned char transposeSetting;
 //-------------------------------------------------------------------------
 void eventLoopInit( void )
@@ -672,6 +675,7 @@ void settings( INIT_PRM* prm )
 {
 	transposeSetting = (unsigned char)prm->transpose + MIDI_CENTER;
 	useAccelSensor = prm->accelSensor;
+	useFullColorLed = prm->fullColorLed;
 	printf("Init Transpose : %d\n",prm->transpose);
 	if ( useAccelSensor == true ) printf("Use Acceleration Sensor.\n");
 	else printf("Not use Acceleration Sensor.\n");
@@ -689,7 +693,7 @@ void initHw( void )
 	initLPS331AP();
 	//	initSX1509();	//	GPIO Expander
 	initMPR121();
-	initBlinkM();
+	if ( useFullColorLed == true ) initBlinkM();
 	initAda88();
 	//initADS1015();	//	AD Converter
 	if ( useAccelSensor == true ) initADXL345();
