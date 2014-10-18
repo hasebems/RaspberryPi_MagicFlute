@@ -676,9 +676,12 @@ void settings( INIT_PRM* prm )
 	transposeSetting = (unsigned char)prm->transpose + MIDI_CENTER;
 	useAccelSensor = prm->accelSensor;
 	useFullColorLed = prm->fullColorLed;
+
 	printf("Init Transpose : %d\n",prm->transpose);
 	if ( useAccelSensor == true ) printf("Use Acceleration Sensor.\n");
 	else printf("Not use Acceleration Sensor.\n");
+	if ( useFullColorLed == true ) printf("Use BlinkM.\n");
+	else printf("Not use BlinkM.\n");
 }
 //-------------------------------------------------------------------------
 void initHw( void )
